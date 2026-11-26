@@ -53,3 +53,9 @@ The SolidCraft adapter stores one configured CLI executable instead of assuming 
 `doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.19.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
 
 No VS Code/Claude/Codex-specific adapter exists. Their configuration points to the same stdio executable with the same arguments.
+
+## Explicit CAD library and model binding
+
+Normal catalog work uses two roots: `CAD_LIBRARY_ROOT` identifies the concrete checked-out CAD/model catalog and `CAD_MODEL_ROOT` identifies exactly one owner folder inside it. The CLI exposes these as `--cad-library` and `--model-root`; model-root may be a relative path such as `models/wall-hook`. The server rejects missing directories, symlinks, the catalog root itself and any model path outside the catalog.
+
+When this binding is active, the selected model folder becomes the workspace root used by every source, build and runtime tool. `workspace_status` and `doctor` expose the configured model ID and library-relative path so the AI knows the target without discovering one. MCP server instructions and both authoring skills forbid fuzzy target selection or implicit owner switching. The legacy `--workspace` path remains for deliberately standalone work only.
