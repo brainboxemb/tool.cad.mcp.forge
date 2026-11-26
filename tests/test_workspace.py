@@ -107,3 +107,35 @@ def test_catalog_binding_limits_workspace_to_exact_model(tmp_path, monkeypatch):
     assert workspace.read_file("model.py")["content"] == "selected = True\n"
     with pytest.raises(workspace.WorkspaceError):
         workspace.read_file("../other/model.py")
+
+
+def test_catalog_dependencies_are_read_only_exact_owner_access(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    target = library / "models" / "assemblies" / "demo"
+    dependency = library / "models" / "components" / "part"
+    target.mkdir(parents=True)
+    dependency_source = dependency / "scpf"
+    dependency_source.mkdir(parents=True)
+    (target / "model.yml").write_text("title: Demo assembly\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Part\n", encoding="utf-8")
+    (dependency_source / "model.py").write_text("VALUE = 12.0\n", encoding="utf-8")
+
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/demo")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    listed = workspace.catalog_dependency_list("models/components/part")
+    paths = {row["path"] for row in listed["entries"]}
+    assert "models/components/part/model.yml" in paths
+    assert "models/components/part/scpf/model.py" in paths
+    assert listed["read_only"] is True
+
+    source = workspace.catalog_dependency_read("models/components/part/scpf/model.py")
+    assert source["owner"] == "models/components/part"
+    assert source["content"] == "VALUE = 12.0\n"
+    assert source["read_only"] is True
+
+    with pytest.raises(workspace.WorkspaceError, match="exact model folder"):
+        workspace.catalog_dependency_list("models/components")
+    with pytest.raises(workspace.WorkspaceError, match="inside|escapes"):
+        workspace.catalog_dependency_read("../outside.py")
