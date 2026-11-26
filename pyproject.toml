@@ -1,0 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forge-cad-mcp"
+version = "0.0.1"
+requires-python = ">=3.11"
+dependencies = ["fastmcp>=2,<3"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<9"]
+
+[project.scripts]
+forge-cad-mcp = "forge_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
