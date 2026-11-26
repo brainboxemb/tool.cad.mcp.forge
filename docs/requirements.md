@@ -43,3 +43,7 @@
 - The MCP environment tool reports the same path-free readiness contract so a client can decide whether CAD work is available.
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
+
+- Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The model root must be one existing directory strictly inside the configured CAD library.
+- The configured model root is authoritative. AI workflows must not search the surrounding catalog for a target, choose among similarly named owners, or switch owners implicitly.
+- All workspace reads/writes, Forge compilation outputs and SolidCraft runtime outputs remain bounded to the configured model root. `--workspace` remains only for explicit standalone/non-catalog work.
