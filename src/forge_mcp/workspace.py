@@ -5,7 +5,8 @@ import hashlib
 import os
 from pathlib import Path
 
-DISCOVER_SUFFIXES = frozenset({".py", ".sc", ".json"})\nREAD_SUFFIXES = frozenset({".py", ".json"})
+DISCOVER_SUFFIXES = frozenset({".py", ".sc", ".json"})
+READ_SUFFIXES = frozenset({".py", ".json"})
 WRITE_SUFFIXES = frozenset({".py"})
 MAX_FILE_BYTES = 1_000_000
 MAX_LIST_LIMIT = 500
@@ -82,7 +83,8 @@ def status() -> dict:
     return {
         "root": str(root),
         "write_enabled": _write_enabled,
-        "discover_suffixes": sorted(DISCOVER_SUFFIXES),\n        "read_suffixes": sorted(READ_SUFFIXES),
+        "discover_suffixes": sorted(DISCOVER_SUFFIXES),
+        "read_suffixes": sorted(READ_SUFFIXES),
         "write_suffixes": sorted(WRITE_SUFFIXES),
         "max_file_bytes": MAX_FILE_BYTES,
     }
