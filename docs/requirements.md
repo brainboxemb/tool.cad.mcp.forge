@@ -44,10 +44,13 @@
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
 
-- Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The model root must be one existing directory strictly inside the configured CAD library.
+- Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The model root must be one exact owner below the configured CAD library's `models/` tree and contain its own `model.yml`.
 - The configured model root is authoritative. AI workflows must not search the surrounding catalog for a target, choose among similarly named owners, or switch owners implicitly.
 - All workspace reads/writes, Forge compilation outputs and SolidCraft runtime outputs remain bounded to the configured model root. `--workspace` remains only for explicit standalone/non-catalog work.
 
 - Catalog-backed assemblies/subassemblies may read exact dependency owners elsewhere in the same CAD library through read-only dependency tools; no dependency tool may write outside the configured target owner.
-- Dependency access requires an exact owner/path and may not provide fuzzy catalog search or implicit target selection.
-- Forge compilation for catalog-bound sessions adds the configured CAD-library root to the Python import path so existing `from models...` component imports resolve without making dependency owners writable.
+- Dependency access requires an explicit owner plus exact path and may not provide fuzzy catalog search or implicit target selection.
+- Forge compilation must rely on Forge's qualified model import context for existing `from models...` imports; MCP must not invent a second catalog component loader.
+
+- Normal MCP `environment`/`workspace_status` responses expose only target identity (`model_id`, `model_relative`), not absolute catalog/model paths; local `doctor` may include paths for diagnosis.
+- Explicit CLI `--workspace` clears inherited catalog binding for that process, and explicit `--cad-library` + `--model-root` clears the standalone workspace fallback.
