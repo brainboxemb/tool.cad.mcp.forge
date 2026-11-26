@@ -141,3 +141,37 @@ def test_catalog_dependencies_are_read_only_exact_owner_access(tmp_path, monkeyp
         workspace.catalog_dependency_list("models/components")
     with pytest.raises(workspace.WorkspaceError, match="inside|escapes"):
         workspace.catalog_dependency_read("../outside.py")
+
+
+def test_mcp_catalog_dependency_tools_require_exact_owner(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    target = library / "models" / "assemblies" / "demo"
+    dependency = library / "models" / "components" / "part"
+    target.mkdir(parents=True)
+    (dependency / "scpf").mkdir(parents=True)
+    (target / "model.yml").write_text("title: Demo\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Part\n", encoding="utf-8")
+    (dependency / "scpf" / "model.py").write_text("VALUE = 12.0\n", encoding="utf-8")
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/demo")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    async def run():
+        async with Client(mcp) as client:
+            listed = await client.call_tool(
+                "catalog_dependency_list", {"owner": "models/components/part"}
+            )
+            assert not listed.is_error
+            assert listed.data["read_only"] is True
+            read = await client.call_tool(
+                "catalog_dependency_read",
+                {"path": "models/components/part/scpf/model.py"},
+            )
+            assert not read.is_error
+            assert read.data["owner"] == "models/components/part"
+            assert read.data["content"] == "VALUE = 12.0\n"
+            with pytest.raises(Exception, match="exact model folder"):
+                await client.call_tool(
+                    "catalog_dependency_list", {"owner": "models/components"}
+                )
+    asyncio.run(run())
