@@ -59,6 +59,8 @@ jobs:
           assert result["ok"], result
           print(result)
           PY
+          rm -rf build/runtime-wheel
+          python -m pip wheel . --no-deps -w build/runtime-wheel
 
       - name: Test released SolidCraft runtime through MCP
         if: hashFiles('pyproject.toml') != ''
@@ -69,7 +71,7 @@ jobs:
             -v "$PWD:/repo:ro" \
             -w /repo \
             ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
-            sh -lc "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install '.[test]' && /tmp/mcp-venv/bin/python -m pytest -q tests/test_runtime.py"
+            sh -lc "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/mcp-venv/bin/python -m pytest -q tests/test_runtime.py"
 
       - name: Test shared merge and cleanup policy
         run: |
