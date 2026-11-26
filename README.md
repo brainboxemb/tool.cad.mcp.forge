@@ -21,7 +21,8 @@ Check the complete environment without executing CAD:
 
 ```sh
 forge-cad-mcp doctor \
-  --workspace /absolute/path/to/model-workspace \
+  --cad-library /absolute/path/to/cad-library \
+  --model-root models/wall-hook \
   --forge-source /absolute/path/to/forge-release \
   --solidcraft-cli /absolute/path/to/solidcraft-cli
 ```
@@ -36,7 +37,8 @@ Use the same stdio server from VS Code, Claude, Codex or another MCP client. Ada
 {
   "command": "/absolute/path/to/venv/bin/forge-cad-mcp",
   "args": [
-    "--workspace", "/absolute/path/to/model-workspace",
+    "--cad-library", "/absolute/path/to/cad-library",
+    "--model-root", "models/wall-hook",
     "--forge-source", "/absolute/path/to/forge-release",
     "--solidcraft-cli", "/absolute/path/to/solidcraft-cli"
   ]
@@ -47,7 +49,9 @@ Windows uses the same arguments; point `command` at the environment's `Scripts\\
 
 Environment variables remain supported as alternatives:
 
-- `FORGE_WORKSPACE_ROOT`
+- `CAD_LIBRARY_ROOT`
+- `CAD_MODEL_ROOT`
+- `FORGE_WORKSPACE_ROOT` (standalone fallback)
 - `FORGE_SOURCE_ROOT`
 - `SOLIDCRAFT_CLI`
 
@@ -114,3 +118,6 @@ FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
 CI reuses `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6` for real SolidCraft 0.49.0 acceptance rather than publishing another runtime image.
 
 See `docs/plan.md` for unfinished work.
+
+
+For catalog work, always bind one exact model owner with `--cad-library` + `--model-root`. The MCP never chooses a target model from the catalog itself. All editable/readable workspace paths are relative to that owner folder.
