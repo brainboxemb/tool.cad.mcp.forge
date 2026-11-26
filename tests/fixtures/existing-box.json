@@ -1,0 +1,27 @@
+{
+  "commands": [
+    {
+      "command": "parameters.add",
+      "params": {"name": "length", "expression": "20 mm", "unit": "mm"}
+    },
+    {
+      "command": "parameters.add",
+      "params": {"name": "width", "expression": "10 mm", "unit": "mm"}
+    },
+    {
+      "command": "parameters.add",
+      "params": {"name": "height", "expression": "5 mm", "unit": "mm"}
+    },
+    {
+      "command": "solid.box",
+      "params": {
+        "length": "length",
+        "width": "width",
+        "height": "height",
+        "operation": "new",
+        "corner": ["-length / 2", "-width / 2", 0],
+        "body_name": "ExistingBox"
+      }
+    }
+  ]
+}

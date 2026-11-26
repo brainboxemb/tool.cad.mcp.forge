@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "forge-cad-mcp"
+version = "0.0.1"
+requires-python = ">=3.11"
+dependencies = ["fastmcp==2.14.7"]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<9", "Pillow>=10"]
+
+[project.scripts]
+forge-cad-mcp = "forge_mcp.server:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+forge_mcp = ["skills/*/SKILL.md"]
