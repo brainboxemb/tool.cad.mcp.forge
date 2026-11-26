@@ -52,8 +52,7 @@ version tag or GitHub Release.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #15 | dev/docs | now | Merge this plan reconciliation and close the issue |
-| #16 | dev -> main | next | Promote the qualified local MCP baseline after #15 and green dev CI |
+| #16 | dev -> main | now | Promote the qualified local MCP baseline after green dev CI |
 
 ## Recently completed
 
@@ -69,6 +68,6 @@ version tag or GitHub Release.
 
 ## Next checkpoint
 
-Merge #15, verify `dev` remains green, then complete #16 as the first
-`dev -> main` product promotion. Decide version/tag/release packaging only
+Complete #16 as the first `dev -> main` product promotion after the current
+`dev` head and promotion PR are green. Decide version/tag/release packaging only
 after the stable baseline exists.
