@@ -18,13 +18,14 @@ Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/bl
 
 ### WS1 — Forge knowledge and CAD acceptance
 
-Issue #3: skills-first knowledge interface, with release-matched local references. Initial search-tool CI failed due to a test helper argument collision; that interface is superseded by skill_list/skill_reference. Next gate: real client acceptance against Forge v0.19.0. Then establish isolated workspace, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues.
+Issue #3: skills-first knowledge interface, with release-matched local references. Initial search-tool CI failed due to a test helper argument collision; that interface is superseded by skill_list/skill_reference. Next gate: real client acceptance against Forge v0.19.0. Then implement local workspace #6, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues. Forge documentation drift exposed by the real API test is tracked upstream as brainboxemb/lib.py.solidcraft.forge#210; installed signatures remain authoritative.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
 | #3 | dev | now | Qualify skill entrypoints and release-matched references |
+| #6 | dev | next | Implement local workspace and source editing |
 | #5 | dev | later | Qualify existing SolidCraft design analysis and Forge conversion after workspace and runtime tools |
 
 ## Recently completed
