@@ -79,3 +79,15 @@ solidcraft_snapshot(model_path="build/model.sc")
 ```
 
 The runtime is pinned to SolidCraft 0.49.0. Evaluation returns compact structured evidence; snapshot returns an actual PNG to the MCP client. The MCP does not expose a generic arbitrary SolidCraft command runner.
+
+
+## Understand an existing SolidCraft design
+
+Start with the `solidcraft-to-forge` skill. Use `model_input_summary` to classify supplied files, then `solidcraft_analyze` for compact native geometry/parameters/history/component evidence and `solidcraft_snapshot` for visual inspection. Native `.sc` files are not exposed as raw text.
+
+The intended loop is:
+
+```text
+existing .sc -> solidcraft_analyze -> author Python -> forge_compile
+             -> solidcraft_replay -> solidcraft_analyze -> snapshot/compare
+```

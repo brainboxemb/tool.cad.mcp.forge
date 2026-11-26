@@ -24,8 +24,8 @@ def test_workspace_roundtrip_and_native_inputs_are_read_only(tmp_path, monkeypat
             paths = {row["path"] for row in listed.data["entries"]}
             assert {"original.sc", "commands.json", "source/model.py"} <= paths
 
-            original = await client.call_tool("workspace_read", {"path": "original.sc"})
-            assert original.data["content"] == "native design"
+            with pytest.raises(Exception, match="not text-readable"):
+                await client.call_tool("workspace_read", {"path": "original.sc"})
 
             current = await client.call_tool("workspace_read", {"path": "source/model.py"})
             updated = await client.call_tool(
