@@ -18,17 +18,18 @@ Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/bl
 
 ### WS1 — bootstrap
 
-Issue #1: establish protocol smoke test and shared CI/merge conventions. Initial in-process protocol CI passed (run 45770916868). Extended subprocess stdio, concurrent Streamable HTTP and image decoding tests pending CI. Next gate: pass extended tests, then install the shared merge-policy bootstrap on the default branch.
+Issue #1: establish protocol smoke test and shared CI/merge conventions. Initial and extended protocol CI passed (runs 45770916868 and 45771379444). Shared merge and cleanup policy seeded on main and dev; next gate: qualify policy tests and integrate PR #2 through /merge.
 
 ### WS2 — CAD acceptance
 
-After bootstrap, establish Forge version-matched knowledge, isolated workspace, compilation, direct SolidCraft CLI inspection/rendering and verification. Create separate implementation issues before work.
+Issue #3 is next: expose version-matched API knowledge and examples through MCP. Then establish isolated workspace, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #1 | dev | now | Qualify protocol and install shared CI/merge policy |
+| #1 | dev | now | Qualify shared policy and integrate PR #2 via /merge |
+| #3 | dev | next | Expose installed Forge API and version-matched documentation |
 
 ## Recently completed
 
@@ -36,4 +37,4 @@ Repository and development branches created.
 
 ## Next checkpoint
 
-Extended transport and image acceptance, then shared merge-policy integration; no release until real CAD integration is demonstrated.
+Bootstrap integration via /merge, then Forge knowledge acceptance; no release until real CAD integration is demonstrated.

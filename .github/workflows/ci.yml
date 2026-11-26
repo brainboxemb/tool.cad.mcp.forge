@@ -23,3 +23,8 @@ jobs:
           python-version: "3.12"
       - run: python -m pip install '.[test]'
       - run: python -m pytest -q
+      - name: Test shared merge and cleanup policy
+        run: |
+          python -m pip install PyYAML==6.0.2
+          PYTHONPATH=modules/merge-policy/src python -m unittest discover -s modules/merge-policy/tests
+          PYTHONPATH=modules/branch-cleanup/src python -m unittest discover -s modules/branch-cleanup/tests
