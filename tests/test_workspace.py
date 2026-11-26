@@ -94,6 +94,8 @@ def test_catalog_binding_limits_workspace_to_exact_model(tmp_path, monkeypatch):
     other = library / "models" / "other"
     selected.mkdir(parents=True)
     other.mkdir(parents=True)
+    (selected / "model.yml").write_text("title: Selected\n", encoding="utf-8")
+    (other / "model.yml").write_text("title: Other\n", encoding="utf-8")
     (selected / "model.py").write_text("selected = True\n", encoding="utf-8")
     (other / "model.py").write_text("other = True\n", encoding="utf-8")
     monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
