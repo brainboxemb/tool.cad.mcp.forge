@@ -33,6 +33,7 @@ def _catalog(tmp_path: Path):
     library = tmp_path / "cad-library"
     model = library / "models" / "wall-hook"
     model.mkdir(parents=True)
+    (model / "model.yml").write_text("title: Wall Hook\n", encoding="utf-8")
     return library, model
 
 
