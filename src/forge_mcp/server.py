@@ -9,7 +9,7 @@ from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
 from . import analysis, compiler, diagnostics, runtime, skills, workspace
 
-mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured model root is authoritative: never search the CAD library for another target model and never switch model owners implicitly.")
+mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners through read-only catalog tools, but never fuzzy-search, switch, or edit another owner implicitly.")
 
 # Fixed transport diagnostic only; never evidence of a CAD render.
 _DIAGNOSTIC_PNG = base64.b64decode(
@@ -70,9 +70,9 @@ def catalog_dependency_list(owner: str, limit: int = 200) -> dict:
     return workspace.catalog_dependency_list(owner, limit)
 
 @mcp.tool
-def catalog_dependency_read(path: str) -> dict:
-    """Read one exact text file from a CAD-library dependency owner, read-only."""
-    return workspace.catalog_dependency_read(path)
+def catalog_dependency_read(owner: str, path: str) -> dict:
+    """Read one exact text file from one explicitly named dependency owner, read-only."""
+    return workspace.catalog_dependency_read(owner, path)
 
 @mcp.tool
 def model_input_summary(path: str) -> dict:
@@ -132,16 +132,14 @@ def solidcraft_snapshot(
     return Image(data=runtime.snapshot(model_path, output_path, width, height, camera), format="png")
 
 def _configure(args) -> None:
-    if args.cad_library:
+    if args.cad_library and args.model_root:
         os.environ["CAD_LIBRARY_ROOT"] = args.cad_library
-    if args.model_root:
-        model = args.model_root
-        if args.cad_library and not os.path.isabs(model):
-            model = os.path.join(args.cad_library, model)
-        os.environ["CAD_MODEL_ROOT"] = model
-        os.environ["FORGE_WORKSPACE_ROOT"] = model
+        os.environ["CAD_MODEL_ROOT"] = args.model_root
+        os.environ.pop("FORGE_WORKSPACE_ROOT", None)
     elif args.workspace:
         os.environ["FORGE_WORKSPACE_ROOT"] = args.workspace
+        os.environ.pop("CAD_LIBRARY_ROOT", None)
+        os.environ.pop("CAD_MODEL_ROOT", None)
     if args.forge_source:
         os.environ["FORGE_SOURCE_ROOT"] = args.forge_source
     if args.solidcraft_cli:
