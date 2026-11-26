@@ -43,18 +43,18 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — Windows local-client setup
+### WS1 — explicit CAD-library model binding
 
-Issue #25 documents the qualified Windows + VS Code + Conda setup using the
-current Copilot-harness `mcpServers` format, explicit local paths and the
-existing `doctor` readiness gate. No runtime behavior changes in this
-workstream.
+Issue #26 binds catalog-backed sessions to one concrete CAD-library checkout
+and one exact model owner. The target owner is authoritative; AI workflows may
+not discover or switch target models implicitly. The Windows VS Code + Conda
+guide is updated to use the same three-checkout setup.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #25 | dev/docs | now | Qualify and publish the Windows VS Code + Conda setup guide |
+| #26 | dev | now | Qualify explicit CAD-library + model-root binding |
 
 ## Recently completed
 
@@ -70,8 +70,9 @@ workstream.
 - #16 first qualified `dev -> main` product promotion.
 - #21 one-time bootstrap CI alignment required to remove the initial
   add/add workflow conflict before #16.
+- #25 Windows VS Code + Conda local setup guide.
 
 ## Next checkpoint
 
-Finish #25, then decide the first version/tag/release packaging from the stable
+Finish #26, then decide the first version/tag/release packaging from the stable
 `main` baseline. Do not add a Docker distribution merely to publish the MCP.
