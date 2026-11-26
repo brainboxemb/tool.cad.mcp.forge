@@ -43,20 +43,20 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — explicit CAD-library model binding
+### WS1 — stable promotion of explicit target/dependency binding
 
-Issue #26 binds catalog-backed sessions to one concrete CAD-library checkout
-and one exact writable target owner. Assemblies/subassemblies retain exact,
-read-only access to other component owners and compile existing `from models...`
-imports against the catalog root. AI workflows may not discover or switch
-target models implicitly. The Windows VS Code + Conda guide uses the same
-three-checkout setup.
+The qualified dev baseline now binds one exact writable target owner inside one
+configured CAD-library checkout. Assemblies and subassemblies may inspect exact
+dependency owners elsewhere in that same catalog read-only, and Forge
+compilation resolves existing `from models...` imports against the catalog
+root. AI workflows may not discover or switch target models implicitly. The
+Windows VS Code + Conda guide uses the same three-checkout setup.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #26 | dev | now | Qualify explicit CAD-library + model-root binding |
+| #31 | dev/docs | now | Integrate this plan update, then open qualified dev -> main promotion |
 
 ## Recently completed
 
@@ -73,8 +73,9 @@ three-checkout setup.
 - #21 one-time bootstrap CI alignment required to remove the initial
   add/add workflow conflict before #16.
 - #25 Windows VS Code + Conda local setup guide.
+- #26 explicit writable target owner plus read-only CAD-library dependency access.
 
 ## Next checkpoint
 
-Finish #26, then decide the first version/tag/release packaging from the stable
-`main` baseline. Do not add a Docker distribution merely to publish the MCP.
+Promote the qualified dev baseline to `main`, then decide the first
+version/tag/release packaging from that stable baseline. Do not add a Docker distribution merely to publish the MCP.
