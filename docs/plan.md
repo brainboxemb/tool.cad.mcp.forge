@@ -4,7 +4,7 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-No qualified release. Main is stable, dev is integration. Bootstrap #1, skills #3, workspace #6, Forge compilation #8 and SolidCraft runtime #9 are integrated through /merge and qualified in CI. The runtime path uses the existing cad-solidcraft:v0.3.6 / SolidCraft 0.49.0 image.
+No qualified stable release yet. Main is stable and dev is integration. Dev now contains the qualified protocol, skills-first Forge knowledge, bounded workspace/source editing, Forge compilation, SolidCraft 0.49 replay/analyze/component/snapshot tools, and the independent existing-SolidCraft-to-Forge acceptance workflow. Real CAD acceptance reuses cad-solidcraft:v0.3.6.
 
 ## Lane rule
 
@@ -12,28 +12,29 @@ Issue branches target dev. Stable promotion is explicit. Use shared /merge polic
 
 ## Engineering constraints
 
-Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/blob/main/docs/engineering-principles.md). Local model iteration must not depend on GitHub. Python/SolidCraft execution remains local-stdio-only until isolated remote execution exists.
+Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/blob/main/docs/engineering-principles.md). Model iteration must remain local and independent of GitHub. Python/SolidCraft execution is local-stdio-only until authenticated isolated remote execution exists.
 
 ## Active workstreams
 
-### WS1 — existing SolidCraft design to Forge
+### WS1 — usable local client baseline
 
-Issue #5: make the solidcraft-to-forge skill executable as an efficient workflow. Add compact input classification and combined native analysis, correct raw .sc handling, then qualify a hand-authored native SolidCraft design against a separately authored Forge Python translation with numeric/structural and visual evidence.
+Issue #13: make the qualified server directly startable from a normal MCP client with explicit workspace/Forge/SolidCraft paths, add a non-CAD doctor readiness gate, pin the qualified FastMCP dependency and document one generic stdio configuration.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #5 | dev | now | Qualify independent native input analysis and translated Forge match |
+| #13 | dev | now | Qualify explicit local startup and doctor from the installed command |
 
 ## Recently completed
 
 - #1 protocol/repository bootstrap.
-- #3 skills and release-matched Forge references.
-- #6 bounded local workspace.
-- #8 real Forge Python -> SolidCraft command JSON compilation.
-- #9 real SolidCraft replay/eval/component inspection/PNG rendering over MCP.
+- #3 skills and version-matched Forge references.
+- #6 bounded workspace/source editing.
+- #8 Forge Python compilation.
+- #9 real SolidCraft runtime operations and PNG transport.
+- #5 independent existing SolidCraft design analysis and Forge translation acceptance.
 
 ## Next checkpoint
 
-End-to-end existing-design conversion acceptance, then decide the first usable pre-release and client packaging/configuration. Docker distribution remains optional.
+After #13 is green, promote the first usable local MCP baseline from dev to main. Only then decide version/tag/release packaging. Docker distribution remains optional and is not part of this checkpoint.

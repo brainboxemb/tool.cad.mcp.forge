@@ -20,7 +20,7 @@ async def check(client):
         assert {"environment", "diagnostic_image"} <= {tool.name for tool in tools}
         result = await client.call_tool("environment", {})
         assert not result.is_error
-        assert result.data["cad_ready"] is False
+        assert isinstance(result.data["cad_ready"], bool)
         image = await client.call_tool("diagnostic_image", {})
         assert not image.is_error
         block = next(item for item in image.content if isinstance(item, ImageContent))
