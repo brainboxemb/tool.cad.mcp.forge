@@ -15,3 +15,8 @@ Use this skill when the user supplies a SolidCraft .sc file, JSON export, or bot
 6. Deliver Python source plus the verification evidence; keep the original intact. If only JSON is available and no native geometry can be recovered, mark the geometry comparison unavailable.
 
 This workflow is a specification for planned execution tools, not evidence that import, inspection, rendering or comparison already works. Consult environment and tool discovery; report unavailable capabilities explicitly. Real input formats and CLI behavior must be qualified under issue #5.
+
+
+## Target model invariant
+
+The configured model root is authoritative. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
