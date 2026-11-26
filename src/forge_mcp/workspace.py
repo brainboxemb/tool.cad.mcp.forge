@@ -8,6 +8,7 @@ from pathlib import Path
 DISCOVER_SUFFIXES = frozenset({".py", ".sc", ".json"})
 READ_SUFFIXES = frozenset({".py", ".json"})
 WRITE_SUFFIXES = frozenset({".py"})
+DEPENDENCY_READ_SUFFIXES = frozenset({".py", ".json", ".yml", ".yaml", ".md"})
 MAX_FILE_BYTES = 1_000_000
 MAX_LIST_LIMIT = 500
 _write_enabled = True
@@ -90,6 +91,93 @@ def _resolve(path: str, *, must_exist: bool = False) -> tuple[Path, Path]:
     if must_exist and not resolved.exists():
         raise WorkspaceError("Workspace path does not exist")
     return root, resolved
+
+
+def _library_root() -> Path:
+    binding = _catalog_binding()
+    if binding is None:
+        raise WorkspaceError("CAD-library dependency access requires CAD_LIBRARY_ROOT + CAD_MODEL_ROOT")
+    return binding[0]
+
+
+def _catalog_resolve(path: str, *, must_exist: bool = False) -> tuple[Path, Path]:
+    library = _library_root()
+    relative = _relative(path)
+    _reject_symlinks(library, relative)
+    resolved = (library / relative).resolve(strict=False)
+    try:
+        resolved.relative_to(library)
+    except ValueError as exc:
+        raise WorkspaceError("Catalog path escapes configured CAD library") from exc
+    if must_exist and not resolved.exists():
+        raise WorkspaceError("Catalog path does not exist")
+    return library, resolved
+
+
+def _owner_root_for(path: Path, library: Path) -> Path | None:
+    current = path if path.is_dir() else path.parent
+    while current != library:
+        if (current / "model.yml").is_file():
+            return current
+        current = current.parent
+    return None
+
+
+def catalog_dependency_list(owner: str, limit: int = 200) -> dict:
+    """List one exact model owner from the CAD library read-only."""
+    library, directory = _catalog_resolve(owner, must_exist=True)
+    if not directory.is_dir() or _owner_root_for(directory, library) != directory:
+        raise WorkspaceError("Dependency owner must be an exact model folder containing model.yml")
+    if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= MAX_LIST_LIMIT:
+        raise WorkspaceError(f"limit must be between 1 and {MAX_LIST_LIMIT}")
+    rows = []
+    for item in sorted(directory.rglob("*")):
+        relative = item.relative_to(library)
+        if item.is_symlink():
+            rows.append({"path": relative.as_posix(), "type": "symlink", "usable": False})
+        elif item.is_file() and (
+            item.suffix.lower() in DEPENDENCY_READ_SUFFIXES or item.suffix.lower() == ".sc"
+        ):
+            rows.append({
+                "path": relative.as_posix(),
+                "type": "native" if item.suffix.lower() == ".sc" else "file",
+                "bytes": item.stat().st_size,
+            })
+        if len(rows) >= limit:
+            break
+    return {
+        "owner": directory.relative_to(library).as_posix(),
+        "entries": rows,
+        "truncated": len(rows) >= limit,
+        "read_only": True,
+    }
+
+
+def catalog_dependency_read(path: str) -> dict:
+    """Read one exact text file inside a model owner elsewhere in the CAD library."""
+    library, target = _catalog_resolve(path, must_exist=True)
+    if not target.is_file():
+        raise WorkspaceError("catalog_dependency_read requires a file")
+    owner = _owner_root_for(target, library)
+    if owner is None:
+        raise WorkspaceError("Dependency file must belong to a model owner containing model.yml")
+    if target.suffix.lower() not in DEPENDENCY_READ_SUFFIXES:
+        raise WorkspaceError("Dependency file type is not text-readable; inspect native .sc through SolidCraft tools")
+    size = target.stat().st_size
+    if size > MAX_FILE_BYTES:
+        raise WorkspaceError("Dependency file exceeds the read size limit")
+    try:
+        content = target.read_text(encoding="utf-8")
+    except UnicodeDecodeError as exc:
+        raise WorkspaceError("Dependency files must be UTF-8 text") from exc
+    return {
+        "owner": owner.relative_to(library).as_posix(),
+        "path": target.relative_to(library).as_posix(),
+        "bytes": size,
+        "sha256": _file_sha(target),
+        "content": content,
+        "read_only": True,
+    }
 
 def _file_sha(path: Path) -> str:
     digest = hashlib.sha256()
