@@ -6,6 +6,8 @@ The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.19.0 and SolidCraft 0
 
 ## Local setup
 
+For a copy-ready Windows walkthrough using VS Code Copilot and Conda, see [Windows + VS Code + Conda local setup](docs/windows-vscode-conda.md).
+
 Create one Python environment containing this package and the exact supported Forge library, and keep the matching Forge checkout available for version-matched skills/references:
 
 ```sh
