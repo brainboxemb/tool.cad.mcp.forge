@@ -5,7 +5,7 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import compiler, runtime, skills, workspace
+from . import analysis, compiler, runtime, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
@@ -54,13 +54,27 @@ def workspace_list(path: str = ".", limit: int = 200) -> dict:
 
 @mcp.tool
 def workspace_read(path: str) -> dict:
-    """Read one UTF-8 Python, SolidCraft .sc or JSON model file with a content hash."""
+    """Read one UTF-8 Python or JSON file with a content hash; native .sc is inspected via SolidCraft."""
     return workspace.read_file(path)
 
 @mcp.tool
 def workspace_write(path: str, content: str, expected_sha256: str | None = None) -> dict:
     """Create Python Forge source or replace it using the hash returned by workspace_read."""
     return workspace.write_source(path, content, expected_sha256)
+
+@mcp.tool
+def model_input_summary(path: str) -> dict:
+    """Classify .sc/.json/.py model input compactly before deciding how to inspect it."""
+    return analysis.input_summary(path)
+
+@mcp.tool
+def solidcraft_analyze(
+    model_path: str,
+    output_dir: str = "build/analysis",
+    include_full_measurements: bool = False,
+) -> dict:
+    """Collect compact geometry/parameter/history and component evidence for an existing native design."""
+    return analysis.analyze(model_path, output_dir, include_full_measurements)
 
 @mcp.tool
 def forge_compile(source_path: str, output_path: str = "build/solidcraft.json") -> dict:

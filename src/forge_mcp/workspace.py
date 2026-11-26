@@ -5,7 +5,7 @@ import hashlib
 import os
 from pathlib import Path
 
-READ_SUFFIXES = frozenset({".py", ".sc", ".json"})
+DISCOVER_SUFFIXES = frozenset({".py", ".sc", ".json"})\nREAD_SUFFIXES = frozenset({".py", ".json"})
 WRITE_SUFFIXES = frozenset({".py"})
 MAX_FILE_BYTES = 1_000_000
 MAX_LIST_LIMIT = 500
@@ -82,7 +82,7 @@ def status() -> dict:
     return {
         "root": str(root),
         "write_enabled": _write_enabled,
-        "read_suffixes": sorted(READ_SUFFIXES),
+        "discover_suffixes": sorted(DISCOVER_SUFFIXES),\n        "read_suffixes": sorted(READ_SUFFIXES),
         "write_suffixes": sorted(WRITE_SUFFIXES),
         "max_file_bytes": MAX_FILE_BYTES,
     }
@@ -99,7 +99,7 @@ def list_files(path: str = ".", limit: int = 200) -> dict:
         relative = item.relative_to(root)
         if item.is_symlink():
             rows.append({"path": relative.as_posix(), "type": "symlink", "usable": False})
-        elif item.is_file() and item.suffix.lower() in READ_SUFFIXES:
+        elif item.is_file() and item.suffix.lower() in DISCOVER_SUFFIXES:
             rows.append({"path": relative.as_posix(), "type": "file", "bytes": item.stat().st_size})
         if len(rows) >= limit:
             break
@@ -111,7 +111,7 @@ def read_file(path: str) -> dict:
     if not target.is_file():
         raise WorkspaceError("workspace_read requires a file")
     if target.suffix.lower() not in READ_SUFFIXES:
-        raise WorkspaceError("File type is not readable through the model workspace")
+        raise WorkspaceError("File type is not text-readable through the model workspace; inspect native .sc through SolidCraft tools")
     size = target.stat().st_size
     if size > MAX_FILE_BYTES:
         raise WorkspaceError("Workspace file exceeds the read size limit")

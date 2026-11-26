@@ -32,3 +32,8 @@
 - No generic arbitrary SolidCraft command runner is exposed. Native source files are inspected through engine-owned eval/render operations.
 
 - solidcraft_components uses only the internally generated read-only component.list command, never caller-supplied command JSON, and returns its structured result below build/.
+
+- Native .sc files are discoverable workspace artifacts but are not exposed as raw text; use SolidCraft analysis/rendering to understand them.
+- model_input_summary classifies .sc/.py and bounded JSON inputs and summarizes command-document types/parameters/body names without dumping the full document.
+- solidcraft_analyze combines compact eval evidence and fixed component.list evidence in one call so conversion work does not need to pull full model JSON by default.
+- End-to-end conversion acceptance must start from a native design produced independently of Forge, then prove an independently authored Forge model matches required parameters, body geometry and a common visual view.
