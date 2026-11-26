@@ -45,14 +45,14 @@ def _catalog_binding() -> tuple[Path, Path] | None:
     model = raw_model.resolve()
     if not model.is_dir():
         raise WorkspaceError("CAD_MODEL_ROOT must be an existing directory")
-    if not (model / "model.yml").is_file():
-        raise WorkspaceError("CAD_MODEL_ROOT must be an exact model owner containing model.yml")
     try:
         relative = model.relative_to(library)
     except ValueError as exc:
         raise WorkspaceError("CAD_MODEL_ROOT must be inside CAD_LIBRARY_ROOT") from exc
     if not relative.parts:
         raise WorkspaceError("CAD_MODEL_ROOT must select one model folder, not the library root")
+    if not (model / "model.yml").is_file():
+        raise WorkspaceError("CAD_MODEL_ROOT must be an exact model owner containing model.yml")
     return library, model
 
 def _root() -> Path:
