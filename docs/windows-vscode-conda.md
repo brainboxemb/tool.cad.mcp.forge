@@ -25,7 +25,7 @@ C:\Dev\SolidCraft\
 ```
 
 The CAD-library checkout is context only. Every MCP session additionally binds
-one exact owner folder such as `models\wall-hook`. That owner becomes the only
+one exact owner folder such as `models\assemblies\simple_mft_assembly`. That owner becomes the only
 workspace for source, build and SolidCraft tools; the AI must not select another
 model from the catalog.
 
@@ -77,6 +77,7 @@ git -C forge-mcp switch main
 python -m pip install -e .\forge-mcp
 
 git clone https://github.com/brainboxemb/2026-011-02.cad.solidcraft.git cad-library
+git -C cad-library switch dev
 ```
 
 Record the executable path that VS Code must start:
@@ -117,7 +118,7 @@ Configure the catalog checkout plus one exact owner folder:
 
 ```powershell
 $CadLibrary = "C:\Dev\SolidCraft\cad-library"
-$ModelRoot = "models\wall-hook"
+$ModelRoot = "models\assemblies\simple_mft_assembly"
 $ForgeSource = "C:\Dev\SolidCraft\forge-release"
 ```
 
@@ -131,10 +132,13 @@ target or switch owners implicitly.
 
 Assemblies and subassemblies can still reuse components elsewhere in the same
 `cad-library` checkout. Those owners are read-only dependencies. The AI may
-inspect an exact dependency owner/path with `catalog_dependency_list` and
-`catalog_dependency_read`; it may not use those tools to select a different
-target. Existing Python imports such as `from models.components...` resolve
-against the configured CAD-library root during `forge_compile`.
+inspect an exact dependency with `catalog_dependency_list(owner)` or
+`catalog_dependency_read(owner, path)`; it may not use those tools to select
+a different target.
+
+Existing Python imports such as `from models.components...` are resolved by
+Forge's own model import context when the target source lives below the
+catalog's `models/` tree. The MCP does not add a separate component loader.
 
 ## 6. Run the readiness check
 
@@ -148,8 +152,8 @@ Run `doctor` before configuring VS Code:
   --solidcraft-cli $SolidCraftCli
 ```
 
-The command does not execute a CAD model. It checks the workspace, the exact
-Forge release and the SolidCraft CLI version.
+The command does not execute a CAD model. It checks the CAD library, exact
+target owner, Forge release and SolidCraft CLI version.
 
 A usable catalog-bound installation returns JSON containing:
 
@@ -158,8 +162,8 @@ A usable catalog-bound installation returns JSON containing:
   "ready": true,
   "workspace": {
     "catalog_bound": true,
-    "model_id": "wall-hook",
-    "model_relative": "models/wall-hook"
+    "model_id": "simple_mft_assembly",
+    "model_relative": "models/assemblies/simple_mft_assembly"
   }
 }
 ```
@@ -197,7 +201,7 @@ An explicit-path configuration looks like this:
         "--cad-library",
         "C:\\Dev\\SolidCraft\\cad-library",
         "--model-root",
-        "models\\wall-hook",
+        "models\\assemblies\\simple_mft_assembly",
         "--forge-source",
         "C:\\Dev\\SolidCraft\\forge-release",
         "--solidcraft-cli",
@@ -337,12 +341,14 @@ It must report SolidCraft `0.49.0`.
 ### The wrong model appears
 
 Stop the MCP. Check `--cad-library` and `--model-root`, then run `doctor`
-again. Do not ask the AI to search the catalog for the correct owner.
+again. The target must be below `models\` and contain its own `model.yml`.
+Do not ask the AI to search the catalog for the correct owner.
 
 ### The MCP starts but CAD is not ready
 
-Call the MCP `environment` tool. Its `readiness` object reports the same
-path-free readiness state as `doctor`.
+Call the MCP `environment` tool. Its `readiness` object is intentionally
+path-free: verify `model_id` and `model_relative`. Use local `doctor` only
+when you need the absolute target/catalog paths for diagnosis.
 
 ### VS Code does not show the server
 
