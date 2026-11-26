@@ -125,3 +125,5 @@ See `docs/plan.md` for unfinished work.
 For catalog work, bind one exact model owner with `--cad-library` plus
 `--model-root`. The MCP never chooses a target model from the catalog itself.
 All workspace, build and runtime paths are bounded to that owner folder.
+
+Assemblies/subassemblies can reuse components from the same CAD-library checkout. The target owner stays the only writable workspace; exact dependency owners can be inspected read-only with `catalog_dependency_list` / `catalog_dependency_read`, and `forge_compile` resolves existing `from models...` imports against the configured catalog root.
