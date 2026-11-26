@@ -5,8 +5,9 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
+from . import skills
 
-mcp = FastMCP("Forge CAD")
+mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
 # Fixed transport diagnostic only; never evidence of a CAD render.
 _DIAGNOSTIC_PNG = base64.b64decode(
@@ -28,6 +29,16 @@ def environment() -> dict:
 def diagnostic_image() -> Image:
     """Return a tiny fixed PNG to check client image support, not a CAD render."""
     return Image(data=_DIAGNOSTIC_PNG, format="png")
+
+@mcp.tool
+def skill_list() -> dict:
+    """Discover task-oriented skills. Read the relevant SKILL.md before authoring or converting CAD."""
+    return skills.skill_list()
+
+@mcp.tool
+def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
+    """Read a skill entrypoint or a named reference from its references/index.json."""
+    return skills.skill_reference(skill, file)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
