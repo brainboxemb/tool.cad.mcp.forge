@@ -16,9 +16,9 @@ Docker packaging, if useful for an operator hosting MCP or reproducing runtime d
 
 ## Local model workspace
 
-FORGE_WORKSPACE_ROOT names one explicit existing directory. Workspace tools expose status, bounded recursive listing, text reads and Python-source writes. Path resolution rejects absolute/traversal paths and symlink traversal. Reads are limited to .py, .sc and .json and one megabyte per file. Source writes are limited to .py, use atomic replacement and require an optimistic SHA-256 token when replacing existing content. There is no delete, rename, shell or arbitrary-file tool.
+FORGE_WORKSPACE_ROOT names one explicit existing directory. Workspace tools expose status, bounded recursive listing, text reads and Python-source writes. Path resolution rejects absolute/traversal paths and symlink traversal. Discovery covers .py, .sc, .json, .yml/.yaml and .md. Text reads are limited to .py, .json, .yml/.yaml and .md and one megabyte per file; native .sc remains opaque. Source writes are limited to .py, use atomic replacement and require an optimistic SHA-256 token when replacing existing content. There is no delete, rename, shell or arbitrary-file tool.
 
-Native .sc and JSON inputs remain immutable through the MCP editor. Runtime/build tools may later create generated artifacts through their own bounded interfaces. The CLI enables workspace writes only for stdio. Streamable HTTP remains read-only until authenticated, per-client workspaces and execution isolation are implemented.
+Native .sc and JSON inputs remain immutable through the MCP editor; metadata/docs are readable but not writable. Runtime/build tools may later create generated artifacts through their own bounded interfaces. The CLI enables workspace writes only for stdio. Streamable HTTP remains read-only until authenticated, per-client workspaces and execution isolation are implemented.
 
 ## Forge compilation
 
