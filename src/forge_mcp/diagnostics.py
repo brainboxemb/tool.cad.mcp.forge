@@ -53,11 +53,9 @@ def doctor(*, include_paths: bool = False) -> dict:
         result["solidcraft"].pop("executable", None)
 
     try:
-        status = workspace.status()
+        status = workspace.status(include_paths=include_paths)
+        result["workspace"].update(status)
         result["workspace"]["ready"] = True
-        result["workspace"]["write_enabled"] = status["write_enabled"]
-        if include_paths:
-            result["workspace"]["root"] = status["root"]
     except Exception as exc:
         result["workspace"]["error"] = str(exc)
 

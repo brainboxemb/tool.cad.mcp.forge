@@ -86,3 +86,120 @@ def test_workspace_blocks_escape_symlink_and_remote_write(tmp_path, monkeypatch)
         asyncio.run(run())
     finally:
         workspace.set_write_enabled(True)
+
+
+def test_catalog_binding_limits_workspace_to_exact_model(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    selected = library / "models" / "selected"
+    other = library / "models" / "other"
+    selected.mkdir(parents=True)
+    other.mkdir(parents=True)
+    (selected / "model.yml").write_text("title: Selected\n", encoding="utf-8")
+    (other / "model.yml").write_text("title: Other\n", encoding="utf-8")
+    (selected / "model.py").write_text("selected = True\n", encoding="utf-8")
+    (other / "model.py").write_text("other = True\n", encoding="utf-8")
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/selected")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    status = workspace.status()
+    assert status["catalog_bound"] is True
+    assert status["model_id"] == "selected"
+    assert status["model_relative"] == "models/selected"
+    assert "root" not in status
+    assert "cad_library_root" not in status
+    assert workspace.read_file("model.py")["content"] == "selected = True\n"
+    with pytest.raises(workspace.WorkspaceError):
+        workspace.read_file("../other/model.py")
+
+
+def test_catalog_dependencies_are_read_only_exact_owner_access(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    target = library / "models" / "assemblies" / "demo"
+    dependency = library / "models" / "components" / "part"
+    target.mkdir(parents=True)
+    dependency_source = dependency / "scpf"
+    dependency_source.mkdir(parents=True)
+    (target / "model.yml").write_text("title: Demo assembly\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Part\n", encoding="utf-8")
+    (dependency_source / "model.py").write_text("VALUE = 12.0\n", encoding="utf-8")
+
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/demo")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    listed = workspace.catalog_dependency_list("models/components/part")
+    paths = {row["path"] for row in listed["entries"]}
+    assert "models/components/part/model.yml" in paths
+    assert "models/components/part/scpf/model.py" in paths
+    assert listed["read_only"] is True
+
+    source = workspace.catalog_dependency_read(
+        "models/components/part", "scpf/model.py"
+    )
+    assert source["owner"] == "models/components/part"
+    assert source["content"] == "VALUE = 12.0\n"
+    assert source["read_only"] is True
+
+    with pytest.raises(workspace.WorkspaceError, match="exact model folder"):
+        workspace.catalog_dependency_list("models/components")
+    with pytest.raises(workspace.WorkspaceError, match="inside|escapes"):
+        workspace.catalog_dependency_read("models/components/part", "../outside.py")
+
+
+def test_mcp_catalog_dependency_tools_require_exact_owner(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    target = library / "models" / "assemblies" / "demo"
+    dependency = library / "models" / "components" / "part"
+    target.mkdir(parents=True)
+    (dependency / "scpf").mkdir(parents=True)
+    (target / "model.yml").write_text("title: Demo\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Part\n", encoding="utf-8")
+    (dependency / "scpf" / "model.py").write_text("VALUE = 12.0\n", encoding="utf-8")
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/demo")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    async def run():
+        async with Client(mcp) as client:
+            listed = await client.call_tool(
+                "catalog_dependency_list", {"owner": "models/components/part"}
+            )
+            assert not listed.is_error
+            assert listed.data["read_only"] is True
+            read = await client.call_tool(
+                "catalog_dependency_read",
+                {"owner": "models/components/part", "path": "scpf/model.py"},
+            )
+            assert not read.is_error
+            assert read.data["owner"] == "models/components/part"
+            assert read.data["content"] == "VALUE = 12.0\n"
+            with pytest.raises(Exception, match="exact model folder"):
+                await client.call_tool(
+                    "catalog_dependency_list", {"owner": "models/components"}
+                )
+    asyncio.run(run())
+
+
+def test_catalog_target_must_live_under_models_and_not_through_symlink(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    wrong = library / "docs" / "fake"
+    wrong.mkdir(parents=True)
+    (wrong / "model.yml").write_text("title: Wrong\n", encoding="utf-8")
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "docs/fake")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+    with pytest.raises(workspace.WorkspaceError, match="below CAD_LIBRARY_ROOT/models"):
+        workspace.status()
+
+    real = library / "models" / "components" / "real"
+    real.mkdir(parents=True)
+    (real / "model.yml").write_text("title: Real\n", encoding="utf-8")
+    link = library / "models" / "components" / "linked"
+    try:
+        link.symlink_to(real, target_is_directory=True)
+    except OSError:
+        return
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/components/linked")
+    with pytest.raises(workspace.WorkspaceError, match="symlink"):
+        workspace.status()
