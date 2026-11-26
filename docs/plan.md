@@ -4,7 +4,7 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-No qualified release. Main is stable, dev is integration. Bootstrap PR #2 merged into dev through /merge; protocol and policy CI passed.
+No qualified release. Main is stable, dev is integration. Bootstrap #1 and skills-first Forge knowledge #3 are integrated through /merge and qualified in CI.
 
 ## Lane rule
 
@@ -16,22 +16,26 @@ Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/bl
 
 ## Active workstreams
 
-### WS1 — Forge knowledge and CAD acceptance
+### WS1 — local authoring workspace
 
-Issue #3: skills-first knowledge interface, with release-matched local references. Initial search-tool CI failed due to a test helper argument collision; that interface is superseded by skill_list/skill_reference. Next gate: real client acceptance against Forge v0.19.0. Then implement local workspace #6, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues. Forge documentation drift exposed by the real API test is tracked upstream as brainboxemb/lib.py.solidcraft.forge#210; installed signatures remain authoritative.
+Issue #6: explicit local workspace, bounded model/source reads and safe Python source editing. Next gate: real MCP tests for listing, native input reads, optimistic source updates, traversal/symlink rejection and HTTP write denial.
+
+### WS2 — CAD execution and conversion
+
+After #6, add Forge compilation and SolidCraft inspect/render capabilities in separate issues. Issue #5 then qualifies the solidcraft-to-forge workflow against real native inputs and generated Forge models. Forge documentation drift remains tracked upstream as brainboxemb/lib.py.solidcraft.forge#210.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #3 | dev | now | Qualify skill entrypoints and release-matched references |
-| #6 | dev | next | Implement local workspace and source editing |
-| #5 | dev | later | Qualify existing SolidCraft design analysis and Forge conversion after workspace and runtime tools |
+| #6 | dev | now | Qualify local workspace and source editing |
+| #5 | dev | later | Qualify native SolidCraft analysis and Forge conversion after execution tools |
 
 ## Recently completed
 
-Bootstrap #1: protocol, stdio, HTTP, concurrent clients, PNG transport and shared merge/cleanup qualification.
+- Bootstrap #1: protocol, stdio, HTTP, concurrent clients, PNG transport and shared merge/cleanup qualification.
+- Knowledge #3: skill_list/skill_reference, forge-modeling and solidcraft-to-forge workflow skills, release-matched Forge references.
 
 ## Next checkpoint
 
-Real Forge knowledge acceptance, followed by CAD execution. Docker distribution is optional deployment packaging, not a prerequisite for local MCP use. Reuse the existing released runtime for CAD CI. No public deployment or new runtime image is assumed.
+Workspace acceptance, then actual Forge compilation and SolidCraft execution. Docker distribution remains optional.

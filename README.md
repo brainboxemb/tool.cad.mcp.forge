@@ -43,3 +43,15 @@ export FORGE_SOURCE_ROOT="$PWD/forge-release"
 ```
 
 For a Windows MCP client set FORGE_SOURCE_ROOT to the absolute checkout path in its environment configuration. Call skill_list, then skill_reference with skill=forge-modeling or solidcraft-to-forge and file=SKILL.md. Read references/index.json for exact guide, example and API reference paths. The conversion skill currently documents the workflow only; actual runtime support is tracked by #5. Queries run locally; no GitHub access is needed after setup. CAD compilation is not connected yet.
+
+
+## Local model workspace
+
+Set one explicit directory for local authoring:
+
+```sh
+export FORGE_WORKSPACE_ROOT="$PWD/my-model"
+forge-cad-mcp
+```
+
+The MCP can list/read UTF-8 `.py`, `.sc` and `.json` files. It may create Python source. Replacing existing Python requires the SHA-256 returned by `workspace_read`; native `.sc` and JSON inputs are read-only. The HTTP bootstrap transport disables workspace writes.
