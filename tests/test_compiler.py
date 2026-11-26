@@ -90,3 +90,47 @@ def test_compile_restricts_output_source_and_transport(tmp_path, monkeypatch):
         asyncio.run(run())
     finally:
         compiler.set_execution_enabled(True)
+
+
+def test_catalog_assembly_compile_can_import_read_only_component(tmp_path, monkeypatch):
+    if not os.environ.get("FORGE_SOURCE_ROOT"):
+        pytest.fail("Real Forge checkout is required for compile acceptance")
+
+    library = tmp_path / "catalog"
+    target = library / "models" / "assemblies" / "demo"
+    dependency = library / "models" / "components" / "part"
+    (target / "scpf").mkdir(parents=True)
+    (dependency / "scpf").mkdir(parents=True)
+    (target / "model.yml").write_text("title: Demo assembly\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Part\n", encoding="utf-8")
+    (dependency / "scpf" / "model.py").write_text(
+        "VALUE = 12.0\n",
+        encoding="utf-8",
+    )
+    (target / "scpf" / "model.py").write_text(
+        "from scpf import Anchor, Box\n"
+        "from models.components.part.scpf.model import VALUE\n\n"
+        "class ImportedBox:\n"
+        "    def build(self):\n"
+        "        return Box(VALUE, 10.0, 5.0, anchor=Anchor.BOTTOM)\n\n"
+        "ImportedBox()\n",
+        encoding="utf-8",
+    )
+
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/demo")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+    compiler.set_execution_enabled(True)
+
+    async def run():
+        async with Client(mcp) as client:
+            result = await client.call_tool(
+                "forge_compile",
+                {"source_path": "scpf/model.py", "output_path": "build/solidcraft.json"},
+            )
+            assert not result.is_error
+            assert result.data["ok"] is True
+            assert result.data["commands"] > 0
+            assert (target / "build" / "solidcraft.json").is_file()
+
+    asyncio.run(run())
