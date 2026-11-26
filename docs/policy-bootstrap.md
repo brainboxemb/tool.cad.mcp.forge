@@ -1,0 +1,1 @@
+One-time initial policy seed on the empty repository's main and dev, before any product merge. Shared merge and cleanup implementation copied from brainboxemb/template.cad.library tree 5716149837df279f0d68f15bd040d5462a026559. No product code or release is promoted by this seed. Subsequent source integration uses /merge.
