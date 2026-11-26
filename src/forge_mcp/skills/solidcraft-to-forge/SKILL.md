@@ -15,3 +15,10 @@ Use this skill when the user supplies a SolidCraft .sc file, JSON export, or bot
 6. Deliver Python source plus the verification evidence; keep the original intact. If only JSON is available and no native geometry can be recovered, mark the geometry comparison unavailable.
 
 This workflow is a specification for planned execution tools, not evidence that import, inspection, rendering or comparison already works. Consult environment and tool discovery; report unavailable capabilities explicitly. Real input formats and CLI behavior must be qualified under issue #5.
+
+
+## Target model invariant
+
+The configured model root is the authoritative target and the only writable owner. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
+
+Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list` and `catalog_dependency_read` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never be used to replace target selection. Forge compilation resolves existing `from models...` imports against the configured CAD-library root.

@@ -53,3 +53,15 @@ The SolidCraft adapter stores one configured CLI executable instead of assuming 
 `doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.19.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
 
 No VS Code/Claude/Codex-specific adapter exists. Their configuration points to the same stdio executable with the same arguments.
+
+## Explicit CAD library and model binding
+
+Normal catalog work uses two roots: `CAD_LIBRARY_ROOT` identifies the concrete checked-out CAD/model catalog and `CAD_MODEL_ROOT` identifies exactly one owner folder inside it. The CLI exposes these as `--cad-library` and `--model-root`; model-root may be a relative path such as `models/wall-hook`. The server rejects missing directories, symlinks, the catalog root itself and any model path outside the catalog.
+
+When this binding is active, the selected model folder becomes the workspace root used by every source, build and runtime tool. `workspace_status` and `doctor` expose the configured model ID and library-relative path so the AI knows the target without discovering one. MCP server instructions and both authoring skills forbid fuzzy target selection or implicit owner switching. The legacy `--workspace` path remains for deliberately standalone work only.
+
+## Read-only catalog dependencies
+
+The target owner remains the only workspace and the only writable boundary. Assemblies and subassemblies can inspect reusable owners elsewhere in the same configured CAD library through `catalog_dependency_list(owner)` and `catalog_dependency_read(path)`. Both calls require exact catalog-relative paths; `catalog_dependency_list` accepts only a directory containing its own `model.yml`, and neither tool offers fuzzy search across the catalog. Native `.sc` dependencies remain opaque and are not exposed as text.
+
+Forge compilation keeps its source and outputs inside the target owner but prepends the configured CAD-library root to `PYTHONPATH`. This preserves the catalog's existing namespace imports such as `from models.components.simple_mft...` while leaving dependency owners read-only through MCP. Target selection and dependency resolution are therefore separate concerns: one exact writable target, many exact read-only dependencies.
