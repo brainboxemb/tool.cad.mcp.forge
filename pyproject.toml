@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "forge-cad-mcp"
 version = "0.0.1"
 requires-python = ">=3.11"
-dependencies = ["fastmcp>=2,<3"]
+dependencies = ["fastmcp==2.14.7"]
 
 [project.optional-dependencies]
 test = ["pytest>=8,<9", "Pillow>=10"]

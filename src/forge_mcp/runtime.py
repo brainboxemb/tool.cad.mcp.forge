@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 import re
 import subprocess
@@ -18,6 +19,7 @@ MAX_PNG_BYTES = 20_000_000
 _VERSION = re.compile(r"(?<!\d)(\d+\.\d+\.\d+)(?!\d)")
 
 _execution_enabled = True
+_cli_executable = os.environ.get("SOLIDCRAFT_CLI", "solidcraft-cli")
 
 
 class RuntimeError(ValueError):
@@ -30,6 +32,20 @@ def set_execution_enabled(enabled: bool) -> None:
     _execution_enabled = bool(enabled)
 
 
+def set_cli_executable(executable: str | None) -> None:
+    """Select the SolidCraft CLI executable used by all bounded runtime calls."""
+    global _cli_executable
+    value = executable or os.environ.get("SOLIDCRAFT_CLI") or "solidcraft-cli"
+    if not isinstance(value, str) or not value.strip():
+        raise RuntimeError("SolidCraft CLI executable must be a non-empty path or command")
+    _cli_executable = value.strip()
+
+
+def cli_executable() -> str:
+    """Return the configured SolidCraft CLI executable."""
+    return _cli_executable
+
+
 def _require_execution() -> None:
     if not _execution_enabled:
         raise RuntimeError("SolidCraft execution is disabled for this server transport")
@@ -40,11 +56,11 @@ def _bounded(value: str | None) -> str:
     return text if len(text) <= MAX_DIAGNOSTIC_CHARS else text[-MAX_DIAGNOSTIC_CHARS:]
 
 
-def _version() -> str:
-    _require_execution()
+def detect_version() -> str:
+    """Return the configured SolidCraft CLI version without executing CAD."""
     try:
         result = subprocess.run(
-            ["solidcraft-cli", "--version"],
+            [_cli_executable, "--version"],
             capture_output=True,
             text=True,
             timeout=15,
@@ -56,7 +72,12 @@ def _version() -> str:
     match = _VERSION.search(text)
     if result.returncode != 0 or match is None:
         raise RuntimeError("Cannot determine SolidCraft runtime version")
-    actual = match.group(1)
+    return match.group(1)
+
+
+def _version() -> str:
+    _require_execution()
+    actual = detect_version()
     if actual != SOLIDCRAFT_VERSION:
         raise RuntimeError(
             f"SolidCraft runtime {actual} differs from required {SOLIDCRAFT_VERSION}"
@@ -129,7 +150,7 @@ def replay(
 
     _, native, relative_native = _build_output(native_path, ".sc")
     result = _run(
-        ["solidcraft-cli", "run", str(commands), "--save", str(native), "--quiet"],
+        [_cli_executable, "run", str(commands), "--save", str(native), "--quiet"],
         cwd=root,
     )
     if result.returncode != 0:
@@ -214,7 +235,7 @@ def evaluate(
         raise RuntimeError("solidcraft_evaluate requires an existing .sc model")
     _, output, relative_output = _build_output(output_path, ".json")
     result = _run(
-        ["solidcraft-cli", "eval", str(model), "--json-out", str(output)],
+        [_cli_executable, "eval", str(model), "--json-out", str(output)],
         cwd=root,
     )
     if result.returncode != 0:
@@ -294,7 +315,7 @@ def components(
     try:
         result = _run(
             [
-                "solidcraft-cli", "run", str(script),
+                _cli_executable, "run", str(script),
                 "--in", str(model),
                 "--param-check", "strict",
                 "--results",
@@ -355,7 +376,7 @@ def snapshot(
             raise RuntimeError(f"snapshot {name} must be an integer from 64 to 2048")
     _, output, _ = _build_output(output_path, ".png")
     command = [
-        "solidcraft-cli", "snapshot", str(model),
+        _cli_executable, "snapshot", str(model),
         "--out", str(output),
         "--width", str(width),
         "--height", str(height),

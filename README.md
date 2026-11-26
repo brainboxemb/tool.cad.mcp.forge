@@ -1,93 +1,116 @@
 # Forge MCP
 
-Vendor-neutral MCP server for AI-assisted Python Forge CAD authoring and SolidCraft runtime inspection, rendering and verification.
+Vendor-neutral local MCP server for AI-assisted Python Forge CAD authoring with SolidCraft inspection, rendering and verification.
 
-Experimental bootstrap; CAD execution is not available yet.
+The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.19.0 and SolidCraft 0.49.0. The server is AI-client independent; stdio is the normal local transport.
 
-## Local development
+## Local setup
 
-```sh
-python -m pip install -e '.[test]'
-python -m pytest -q tests  # after Forge setup below
-forge-cad-mcp
-```
-
-Local MCP client configuration (adapt the enclosing configuration key to the client):
-
-```json
-{
-  "command": "forge-cad-mcp",
-  "args": []
-}
-```
-
-Streamable HTTP development endpoint:
-
-```sh
-forge-cad-mcp --transport http --port 8000
-```
-
-Connect to http://127.0.0.1:8000/mcp. Loopback only; not a public deployment. Call environment and diagnostic_image to check client support. The diagnostic image is not a CAD render.
-
-See docs/plan.md for current work.
-
-## Forge authoring knowledge
-
-Install the matching local Forge release before using the knowledge tools:
+Create one Python environment containing this package and the exact supported Forge library, and keep the matching Forge checkout available for version-matched skills/references:
 
 ```sh
 git clone https://github.com/brainboxemb/lib.py.solidcraft.forge.git forge-release
 git -C forge-release checkout --detach ce9cd4439efe51edc360b7bfffb77b950e218d32
 python -m pip install ./forge-release/cadlib
-export FORGE_SOURCE_ROOT="$PWD/forge-release"
+python -m pip install .
 ```
 
-For a Windows MCP client set FORGE_SOURCE_ROOT to the absolute checkout path in its environment configuration. Call skill_list, then skill_reference with skill=forge-modeling or solidcraft-to-forge and file=SKILL.md. Read references/index.json for exact guide, example and API reference paths. The conversion skill currently documents the workflow only; actual runtime support is tracked by #5. Queries run locally; no GitHub access is needed after setup. CAD compilation is not connected yet.
+SolidCraft 0.49.0 must be installed locally. It may be on PATH or supplied explicitly with `--solidcraft-cli`.
 
-
-## Local model workspace
-
-Set one explicit directory for local authoring:
+Check the complete environment without executing CAD:
 
 ```sh
-export FORGE_WORKSPACE_ROOT="$PWD/my-model"
-forge-cad-mcp
+forge-cad-mcp doctor \
+  --workspace /absolute/path/to/model-workspace \
+  --forge-source /absolute/path/to/forge-release \
+  --solidcraft-cli /absolute/path/to/solidcraft-cli
 ```
 
-The MCP can list/read UTF-8 `.py`, `.sc` and `.json` files. It may create Python source. Replacing existing Python requires the SHA-256 returned by `workspace_read`; native `.sc` and JSON inputs are read-only. The HTTP bootstrap transport disables workspace writes.
+The command returns JSON and exits successfully only when the workspace, exact Forge release and SolidCraft 0.49.0 are ready.
 
+## MCP client configuration
 
-## Compile Forge source
+Use the same stdio server from VS Code, Claude, Codex or another MCP client. Adapt only the client's outer configuration key:
 
-With FORGE_SOURCE_ROOT and FORGE_WORKSPACE_ROOT configured, local stdio clients can compile one workspace Python model without starting SolidCraft:
+```json
+{
+  "command": "/absolute/path/to/venv/bin/forge-cad-mcp",
+  "args": [
+    "--workspace", "/absolute/path/to/model-workspace",
+    "--forge-source", "/absolute/path/to/forge-release",
+    "--solidcraft-cli", "/absolute/path/to/solidcraft-cli"
+  ]
+}
+```
+
+Windows uses the same arguments; point `command` at the environment's `Scripts\\forge-cad-mcp.exe` and use absolute Windows paths.
+
+Environment variables remain supported as alternatives:
+
+- `FORGE_WORKSPACE_ROOT`
+- `FORGE_SOURCE_ROOT`
+- `SOLIDCRAFT_CLI`
+
+Command-line values take precedence for the current server process.
+
+## Skills
+
+Call `skill_list`, then read the relevant `SKILL.md` using `skill_reference`.
+
+- `forge-modeling` — create or edit maintainable Python Forge models.
+- `solidcraft-to-forge` — understand an existing native SolidCraft design and translate it into verified Forge Python.
+
+References are matched to Forge 0.19.0. After local setup, model iteration does not require GitHub calls.
+
+## Local authoring loop
+
+The MCP provides bounded tools for source and CAD work:
 
 ```text
-forge_compile(source_path="source/model.py", output_path="build/solidcraft.json")
+workspace_list/read/write
+        |
+        v
+forge_compile
+        |
+        v
+solidcraft_replay
+        |
+        +--> solidcraft_analyze / solidcraft_evaluate
+        +--> solidcraft_components
+        +--> solidcraft_snapshot -> PNG to the AI
 ```
 
-The generated JSON is read-only workspace evidence. Compile/model failures are returned with bounded diagnostics. HTTP bootstrap disables Python model execution.
-
-
-## SolidCraft runtime
-
-Trusted local stdio clients can turn compiled JSON into native CAD evidence:
+For an existing design:
 
 ```text
-solidcraft_replay()
-solidcraft_evaluate(model_path="build/model.sc")
-solidcraft_snapshot(model_path="build/model.sc")
+existing .sc -> model_input_summary / solidcraft_analyze
+             -> skill: solidcraft-to-forge
+             -> Python Forge source
+             -> forge_compile -> solidcraft_replay
+             -> analyze + render original and candidate
 ```
 
-The runtime is pinned to SolidCraft 0.49.0. Evaluation returns compact structured evidence; snapshot returns an actual PNG to the MCP client. The MCP does not expose a generic arbitrary SolidCraft command runner.
+Native `.sc` is an engine-owned artifact and is not exposed as raw text. Optional JSON is classified before use. The MCP does not expose arbitrary shell execution or a generic caller-supplied SolidCraft command runner.
 
+## Transport boundary
 
-## Understand an existing SolidCraft design
+Local stdio enables workspace writes, Python model compilation and SolidCraft execution.
 
-Start with the `solidcraft-to-forge` skill. Use `model_input_summary` to classify supplied files, then `solidcraft_analyze` for compact native geometry/parameters/history/component evidence and `solidcraft_snapshot` for visual inspection. Native `.sc` files are not exposed as raw text.
+Streamable HTTP is still a loopback development transport:
 
-The intended loop is:
-
-```text
-existing .sc -> solidcraft_analyze -> author Python -> forge_compile
-             -> solidcraft_replay -> solidcraft_analyze -> snapshot/compare
+```sh
+forge-cad-mcp --transport http --port 8000
 ```
+
+HTTP remains read-only for workspace/execution until authentication, isolated workspaces and sandboxed generated-Python execution are implemented. No separate MCP Docker image is required for local use.
+
+## Development
+
+```sh
+python -m pip install -e '.[test]' ./forge-release/cadlib
+FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
+```
+
+CI reuses `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6` for real SolidCraft 0.49.0 acceptance rather than publishing another runtime image.
+
+See `docs/plan.md` for unfinished work.

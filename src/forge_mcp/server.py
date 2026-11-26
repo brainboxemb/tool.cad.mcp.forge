@@ -1,11 +1,13 @@
 """Vendor-neutral MCP entry point; CAD adapters are not yet connected."""
 import argparse
 import base64
+import json
+import os
 from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import analysis, compiler, runtime, skills, workspace
+from . import analysis, compiler, diagnostics, runtime, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
@@ -16,15 +18,15 @@ _DIAGNOSTIC_PNG = base64.b64decode(
 
 @mcp.tool
 def environment() -> dict:
-    """Report available capabilities without claiming unconnected CAD support."""
+    """Report protocol and local CAD readiness without executing model work."""
+    readiness = diagnostics.doctor(include_paths=False)
     return {
         "protocol": "mcp",
-        "stage": "bootstrap",
-        "cad_ready": False,
+        "stage": "local-qualified",
+        "cad_ready": readiness["ready"],
         "fastmcp_version": version("fastmcp"),
         "transports": ["stdio", "streamable-http"],
-        "workspace_configured": bool(__import__("os").environ.get("FORGE_WORKSPACE_ROOT")),
-        "forge_source_configured": bool(__import__("os").environ.get("FORGE_SOURCE_ROOT")),
+        "readiness": readiness,
     }
 
 @mcp.tool
@@ -119,18 +121,39 @@ def solidcraft_snapshot(
     """Render a native SolidCraft model to a PNG that the MCP client can inspect visually."""
     return Image(data=runtime.snapshot(model_path, output_path, width, height, camera), format="png")
 
+def _configure(args) -> None:
+    if args.workspace:
+        os.environ["FORGE_WORKSPACE_ROOT"] = args.workspace
+    if args.forge_source:
+        os.environ["FORGE_SOURCE_ROOT"] = args.forge_source
+    if args.solidcraft_cli:
+        os.environ["SOLIDCRAFT_CLI"] = args.solidcraft_cli
+    runtime.set_cli_executable(args.solidcraft_cli)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
+    parser.add_argument("mode", nargs="?", choices=["serve", "doctor"], default="serve")
+    parser.add_argument("--workspace", help="Explicit local CAD workspace root")
+    parser.add_argument("--forge-source", help="Exact supported Forge release checkout")
+    parser.add_argument("--solidcraft-cli", help="SolidCraft CLI executable path or command")
     parser.add_argument("--transport", choices=["stdio", "http"], default="stdio")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
+    _configure(args)
+
+    if args.mode == "doctor":
+        report = diagnostics.doctor(include_paths=True)
+        print(json.dumps(report, indent=2))
+        raise SystemExit(0 if report["ready"] else 1)
+
     workspace.set_write_enabled(args.transport == "stdio")
     compiler.set_execution_enabled(args.transport == "stdio")
     runtime.set_execution_enabled(args.transport == "stdio")
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     else:
-        # Remote bootstrap is read-only until authentication and per-client isolation exist.
+        # Remote bootstrap is read-only until authentication and isolated workspaces exist.
         mcp.run(transport="http", host="127.0.0.1", port=args.port, path="/mcp")
 
 if __name__ == "__main__":
