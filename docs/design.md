@@ -25,3 +25,13 @@ Native .sc and JSON inputs remain immutable through the MCP editor. Runtime/buil
 forge_compile is the only initial model-execution boundary. It validates the same Forge v0.19.0 release used by skill references, resolves one existing workspace .py source, and invokes the supported `python -m scpf <source> --out <build/...json>` interface without a shell. The process runs with the workspace as cwd, has a fixed timeout and bounded captured diagnostics. Before each attempt it removes the previous target so a failed build cannot leave stale command evidence.
 
 Successful output must be a non-empty JSON object with a commands array; the tool returns command count, size and SHA-256. Compile/model errors are normal structured results with ok=false, while invalid workspace/configuration requests remain tool errors. Running a Forge model executes Python and is therefore permitted only for local stdio during this stage. Remote execution requires the later sandbox/authentication gate.
+
+## SolidCraft runtime
+
+The first runtime adapter deliberately exposes only three engine-owned operations: replay generated build command JSON, evaluate an existing native .sc, and render a deterministic PNG. It validates solidcraft-cli 0.49.0 before every operation and uses fixed subprocess argument lists, timeouts, bounded diagnostics and build-only outputs. There is no generic command JSON executor in the MCP interface.
+
+solidcraft_replay accepts only generated JSON below build/ and creates build/*.sc. solidcraft_evaluate may read any workspace .sc without treating the native format as text; it writes build/*.json and returns a compact summary of available sections, bodies, parameters, timeline, sketches and component/occurrence rows when present. Full measurements are optional and size-bounded. solidcraft_snapshot reads any workspace .sc, writes build/*.png and returns the validated PNG as MCP image content.
+
+Runtime execution is enabled only for local stdio. CI creates command JSON with the already-qualified Forge compiler on the host, then runs the MCP runtime acceptance inside the existing ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 image. This proves the same SolidCraft 0.49.0 runtime used by Forge/CAD-CI without introducing a new MCP runtime image.
+
+The fixed solidcraft_components inspection is the first explicit native-structure query. It internally generates exactly one component.list command with boolean compact/bodies options, runs it read-only against the supplied .sc without --save, removes the temporary command file, persists only the result JSON below build/ and returns that result. This does not create a generic command execution surface.

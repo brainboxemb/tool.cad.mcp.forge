@@ -66,3 +66,16 @@ forge_compile(source_path="source/model.py", output_path="build/solidcraft.json"
 ```
 
 The generated JSON is read-only workspace evidence. Compile/model failures are returned with bounded diagnostics. HTTP bootstrap disables Python model execution.
+
+
+## SolidCraft runtime
+
+Trusted local stdio clients can turn compiled JSON into native CAD evidence:
+
+```text
+solidcraft_replay()
+solidcraft_evaluate(model_path="build/model.sc")
+solidcraft_snapshot(model_path="build/model.sc")
+```
+
+The runtime is pinned to SolidCraft 0.49.0. Evaluation returns compact structured evidence; snapshot returns an actual PNG to the MCP client. The MCP does not expose a generic arbitrary SolidCraft command runner.

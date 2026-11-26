@@ -24,3 +24,11 @@
 - forge_compile accepts only an existing workspace .py source, validates the configured Forge release, and writes command JSON only below build/.
 - Compilation invokes the supported scpf module directly without a shell. Compile failures return bounded structured stdout/stderr and remove stale output.
 - Python model execution is enabled only for the trusted local stdio transport; the HTTP bootstrap may not compile generated Python.
+
+- SolidCraft execution uses exactly the released 0.49.0 CLI and is local-stdio-only at this stage.
+- solidcraft_replay accepts generated command JSON below build/ and writes a native .sc only below build/.
+- solidcraft_evaluate accepts an existing workspace .sc, persists measurements below build/, and returns compact parameters/body/history/sketch evidence; optional full evidence is size-bounded.
+- solidcraft_snapshot accepts an existing workspace .sc, writes PNG only below build/, validates dimensions/output and returns the PNG through MCP for visual analysis.
+- No generic arbitrary SolidCraft command runner is exposed. Native source files are inspected through engine-owned eval/render operations.
+
+- solidcraft_components uses only the internally generated read-only component.list command, never caller-supplied command JSON, and returns its structured result below build/.
