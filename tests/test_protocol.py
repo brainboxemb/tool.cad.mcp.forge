@@ -1,5 +1,6 @@
 import asyncio
 import base64
+import io
 import socket
 import subprocess
 import sys
@@ -8,6 +9,7 @@ import time
 from fastmcp import Client
 from fastmcp.client.transports import StdioTransport
 from mcp.types import ImageContent
+from PIL import Image
 
 from forge_mcp.server import mcp
 
@@ -23,7 +25,10 @@ async def check(client):
         assert not image.is_error
         block = next(item for item in image.content if isinstance(item, ImageContent))
         assert block.mimeType == "image/png"
-        assert base64.b64decode(block.data).startswith(b"\x89PNG\r\n\x1a\n")
+        with Image.open(io.BytesIO(base64.b64decode(block.data))) as png:
+            assert png.format == "PNG"
+            assert png.size == (16, 16)
+            png.verify()
 
 
 def test_in_process():
