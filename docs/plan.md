@@ -4,11 +4,11 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-New repository; no qualified release. Main is stable, dev is integration.
+No qualified release. Main is stable, dev is integration. Bootstrap PR #2 merged into dev through /merge; protocol and policy CI passed.
 
 ## Lane rule
 
-Issue branches target dev. Stable promotion is explicit. Shared merge policy must be installed before integration.
+Issue branches target dev. Stable promotion is explicit. Use shared /merge policy.
 
 ## Engineering constraints
 
@@ -16,25 +16,20 @@ Follow [shared principles](https://github.com/brainboxemb/meta.cad.solidcraft/bl
 
 ## Active workstreams
 
-### WS1 — bootstrap
+### WS1 — Forge knowledge and CAD acceptance
 
-Issue #1: establish protocol smoke test and shared CI/merge conventions. Initial and extended protocol CI passed (runs 45770916868 and 45771379444). Shared merge and cleanup policy seeded on main and dev; next gate: qualify policy tests and integrate PR #2 through /merge.
-
-### WS2 — CAD acceptance
-
-Issue #3 is next: expose version-matched API knowledge and examples through MCP. Then establish isolated workspace, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues.
+Issue #3: expose installed Forge API and release-matched local documentation and examples. Next gate: real client acceptance against Forge v0.19.0. Then establish isolated workspace, compilation, direct SolidCraft CLI inspection/rendering and verification in separate issues.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #1 | dev | now | Qualify shared policy and integrate PR #2 via /merge |
-| #3 | dev | next | Expose installed Forge API and version-matched documentation |
+| #3 | dev | now | Qualify Forge API and local knowledge tools |
 
 ## Recently completed
 
-Repository and development branches created.
+Bootstrap #1: protocol, stdio, HTTP, concurrent clients, PNG transport and shared merge/cleanup qualification.
 
 ## Next checkpoint
 
-Bootstrap integration via /merge, then Forge knowledge acceptance; no release until real CAD integration is demonstrated.
+Real Forge knowledge acceptance, followed by CAD execution. Docker distribution is optional deployment packaging, not a prerequisite for local MCP use. Reuse the existing released runtime for CAD CI. No public deployment or new runtime image is assumed.

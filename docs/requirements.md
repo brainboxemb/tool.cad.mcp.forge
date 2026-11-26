@@ -10,3 +10,7 @@
 - Verify discovery, structured results and image content over both transports; test independent simultaneous clients.
 - Before remote deployment, authenticate clients, isolate generated Python execution and restrict each client's workspace. Transport tests do not prove workspace isolation.
 - Qualify through real MCP client tests and real runtime integration tests.
+
+- Knowledge queries use only a locally configured release-matched Forge checkout and installed scpf; no per-query network requests.
+- Return public API signatures, docstrings, bounded search excerpts and exact example source, with explicit errors for unsupported names or unavailable/mismatched releases.
+- Local stdio installation must remain possible without a new MCP Docker image.
