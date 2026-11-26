@@ -3,10 +3,7 @@ from importlib import import_module, metadata
 import inspect
 import os
 from pathlib import Path
-import re
 import subprocess
-from functools import lru_cache
-from html.parser import HTMLParser
 
 FORGE_VERSION = "0.19.0"
 FORGE_COMMIT = "ce9cd4439efe51edc360b7bfffb77b950e218d32"
@@ -92,104 +89,8 @@ def api_lookup(name: str) -> dict:
     }
 
 
-def _terms(query: str) -> list[str]:
-    terms = re.findall(r"[a-z0-9_]+", query.lower())[:12]
-    if not terms:
-        raise KnowledgeError("Provide a non-empty search query")
-    return terms
-
-
-def _score(terms: list[str], text: str) -> int:
-    text = text.lower()
-    return sum(term in text for term in terms)
-
-
-def api_search(query: str, limit: int = 12) -> dict:
-    api = _api()
-    terms = _terms(query)
-    results = []
-    for name in api.__all__:
-        obj = getattr(api, name)
-        for key, value in [(name, obj), *((f"{name}.{n}", m) for n, m in _public_members(obj))]:
-            summary = _summary(value)
-            score = 3 * _score(terms, key) + _score(terms, summary)
-            if score:
-                results.append((score, key, {"name": key, "signature": _signature(value), "summary": summary[:500]}))
-    results.sort(key=lambda row: (-row[0], row[1]))
-    return {"forge_version": FORGE_VERSION, "matches": [row[2] for row in results[:max(1, min(limit, 30))]]}
-
-
-class _HTMLText(HTMLParser):
-    def __init__(self):
-        super().__init__()
-        self.parts = []
-
-    def handle_data(self, data):
-        self.parts.append(data)
-
-    def handle_endtag(self, tag):
-        if tag in {"p", "pre", "li", "h1", "h2", "h3", "tr"}:
-            self.parts.append("\n")
-
-
-def _doc_text(root: Path, path: Path) -> str:
-    content = _read(root, path)
-    if path.suffix == ".html":
-        parser = _HTMLText()
-        parser.feed(content)
-        return "".join(parser.parts)
-    return content
-
-
-@lru_cache(maxsize=4)
-def _documents(root: Path) -> tuple:
-    docs = root / "docs"
-    paths = [docs / "api.md", docs / "api-reference.json", docs / "cheatsheet.yml"]
-    paths.extend(sorted((docs / "guide").glob("*.html")))
-    chunks = []
-    for path in paths:
-        lines = _doc_text(root, path).splitlines()
-        for start in range(0, len(lines), 18):
-            snippet = "\n".join(lines[start:start + 24]).strip()[:2500]
-            if snippet:
-                chunks.append((str(path.relative_to(root)), snippet))
-    return tuple(chunks)
-
-
-def docs_search(query: str, limit: int = 5) -> dict:
-    root = source_root()
-    terms = _terms(query)
-    ranked = []
-    for path, snippet in _documents(root):
-        score = _score(terms, snippet) + _score(terms, path)
-        if score:
-            ranked.append((score, path, snippet))
-    ranked.sort(key=lambda row: (-row[0], row[1]))
-    return {"forge_version": FORGE_VERSION, "matches": [
-        {"path": path, "excerpt": snippet} for _, path, snippet in ranked[:max(1, min(limit, 10))]
-    ]}
-
-
-def example_search(query: str, limit: int = 8) -> dict:
-    root = source_root()
-    terms = _terms(query)
-    results = []
-    for path in sorted((root / "models").glob("*/scpf/model.py")):
-        name = path.parent.parent.name
-        code = _read(root, path)
-        score = 3 * _score(terms, name) + _score(terms, code)
-        if score:
-            results.append((score, name, str(path.relative_to(root))))
-    results.sort(key=lambda row: (-row[0], row[1]))
-    return {"forge_version": FORGE_VERSION, "matches": [
-        {"model": name, "path": path} for _, name, path in results[:max(1, min(limit, 20))]
-    ]}
-
-
 def example_read(model: str) -> dict:
     root = source_root()
-    if not re.fullmatch(r"[a-zA-Z0-9][a-zA-Z0-9_-]*", model):
-        raise KnowledgeError("Use an exact example model ID")
     path = root / "models" / model / "scpf" / "model.py"
     if not path.is_file():
         raise KnowledgeError("Unknown Forge example")

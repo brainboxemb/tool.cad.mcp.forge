@@ -42,4 +42,4 @@ python -m pip install ./forge-release/cadlib
 export FORGE_SOURCE_ROOT="$PWD/forge-release"
 ```
 
-For a Windows MCP client set FORGE_SOURCE_ROOT to the absolute checkout path in its environment configuration. Use forge_api_lookup, forge_api_search, forge_docs_search, forge_examples_search and forge_example_read. Queries run locally; no GitHub access is needed after setup. CAD compilation is not connected yet.
+For a Windows MCP client set FORGE_SOURCE_ROOT to the absolute checkout path in its environment configuration. Call skill_list, then skill_reference with skill=forge-modeling or solidcraft-to-forge and file=SKILL.md. Read references/index.json for exact guide, example and API reference paths. The conversion skill currently documents the workflow only; actual runtime support is tracked by #5. Queries run locally; no GitHub access is needed after setup. CAD compilation is not connected yet.

@@ -12,5 +12,6 @@
 - Qualify through real MCP client tests and real runtime integration tests.
 
 - Knowledge queries use only a locally configured release-matched Forge checkout and installed scpf; no per-query network requests.
-- Return public API signatures, docstrings, bounded search excerpts and exact example source, with explicit errors for unsupported names or unavailable/mismatched releases.
+- Expose task-oriented SKILL.md entrypoints via skill discovery and skill_reference. Provide explicit references to release-matched API signatures, docstrings, guides, cheatsheet and example source, with explicit errors for unsupported paths or mismatched releases.
 - Local stdio installation must remain possible without a new MCP Docker image.
+- A conversion skill must teach analysis of existing .sc designs and optional JSON exports, preserving original files and distinguishing observed model data from inferred modeling intent. Actual runtime conversion acceptance belongs to #5.

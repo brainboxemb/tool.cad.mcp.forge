@@ -5,9 +5,9 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import knowledge
+from . import skills
 
-mcp = FastMCP("Forge CAD")
+mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
 # Fixed transport diagnostic only; never evidence of a CAD render.
 _DIAGNOSTIC_PNG = base64.b64decode(
@@ -31,29 +31,14 @@ def diagnostic_image() -> Image:
     return Image(data=_DIAGNOSTIC_PNG, format="png")
 
 @mcp.tool
-def forge_api_lookup(name: str) -> dict:
-    """Get exact signature, documentation and public members of a Forge API name."""
-    return knowledge.api_lookup(name)
+def skill_list() -> dict:
+    """Discover task-oriented skills. Read the relevant SKILL.md before authoring or converting CAD."""
+    return skills.skill_list()
 
 @mcp.tool
-def forge_api_search(query: str, limit: int = 12) -> dict:
-    """Search exported Forge API names and public methods."""
-    return knowledge.api_search(query, limit)
-
-@mcp.tool
-def forge_docs_search(query: str, limit: int = 5) -> dict:
-    """Search local version-matched Forge guide, API reference and cheatsheet."""
-    return knowledge.docs_search(query, limit)
-
-@mcp.tool
-def forge_examples_search(query: str, limit: int = 8) -> dict:
-    """Find real Forge source examples by topic or model ID."""
-    return knowledge.example_search(query, limit)
-
-@mcp.tool
-def forge_example_read(model: str) -> dict:
-    """Read the Python source of one exact Forge example model ID."""
-    return knowledge.example_read(model)
+def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
+    """Read a skill entrypoint or a named reference from its references/index.json."""
+    return skills.skill_reference(skill, file)
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
