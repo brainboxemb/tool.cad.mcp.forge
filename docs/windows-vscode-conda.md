@@ -129,6 +129,13 @@ Changing model means explicitly restarting the MCP with a different
 `--model-root`. The AI is not allowed to search the catalog for a likely
 target or switch owners implicitly.
 
+Assemblies and subassemblies can still reuse components elsewhere in the same
+`cad-library` checkout. Those owners are read-only dependencies. The AI may
+inspect an exact dependency owner/path with `catalog_dependency_list` and
+`catalog_dependency_read`; it may not use those tools to select a different
+target. Existing Python imports such as `from models.components...` resolve
+against the configured CAD-library root during `forge_compile`.
+
 ## 6. Run the readiness check
 
 Run `doctor` before configuring VS Code:
