@@ -86,3 +86,24 @@ def test_workspace_blocks_escape_symlink_and_remote_write(tmp_path, monkeypatch)
         asyncio.run(run())
     finally:
         workspace.set_write_enabled(True)
+
+
+def test_catalog_binding_limits_workspace_to_exact_model(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    selected = library / "models" / "selected"
+    other = library / "models" / "other"
+    selected.mkdir(parents=True)
+    other.mkdir(parents=True)
+    (selected / "model.py").write_text("selected = True\n", encoding="utf-8")
+    (other / "model.py").write_text("other = True\n", encoding="utf-8")
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/selected")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    status = workspace.status()
+    assert status["catalog_bound"] is True
+    assert status["model_id"] == "selected"
+    assert status["model_relative"] == "models/selected"
+    assert workspace.read_file("model.py")["content"] == "selected = True\n"
+    with pytest.raises(workspace.WorkspaceError):
+        workspace.read_file("../other/model.py")
