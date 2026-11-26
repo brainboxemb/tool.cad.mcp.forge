@@ -21,11 +21,97 @@ jobs:
       - uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+      - name: Check out qualified Forge release
+        if: hashFiles('pyproject.toml') != ''
+        uses: actions/checkout@v7
+        with:
+          repository: brainboxemb/lib.py.solidcraft.forge
+          ref: ce9cd4439efe51edc360b7bfffb77b950e218d32
+          path: forge-release
+          persist-credentials: false
       - name: Test installed MCP package
         if: hashFiles('pyproject.toml') != ''
         run: |
-          python -m pip install '.[test]'
-          python -m pytest -q tests
+          python -m pip install '.[test]' ./forge-release/cadlib
+          FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
+      - name: Prepare compiled SolidCraft runtime fixture
+        if: hashFiles('pyproject.toml') != ''
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+          FORGE_WORKSPACE_ROOT: ${{ github.workspace }}/build/runtime-fixture
+        run: |
+          rm -rf build/runtime-fixture
+          mkdir -p build/runtime-fixture/source
+          cat > build/runtime-fixture/source/model.py <<'PY'
+          class RuntimeBox:
+              length = 20.0
+              width = 10.0
+              height = 5.0
+
+              def build(self):
+                  return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
+
+          RuntimeBox()
+          PY
+          python - <<'PY'
+          from forge_mcp import compiler
+          result = compiler.compile_model("source/model.py")
+          assert result["ok"], result
+          print(result)
+          PY
+          rm -rf build/runtime-wheel
+          python -m pip wheel . --no-deps -w build/runtime-wheel
+
+      - name: Test released SolidCraft runtime through MCP
+        if: hashFiles('pyproject.toml') != ''
+        run: |
+          docker run --rm \
+            -e SOLIDCRAFT_RUNTIME_ACCEPTANCE=1 \
+            -e SOLIDCRAFT_TEST_COMMANDS=/repo/build/runtime-fixture/build/solidcraft.json \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
+            sh -c "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/mcp-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_runtime.py"
+
+      - name: Prepare existing-design conversion fixture
+        if: hashFiles('pyproject.toml') != ''
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+          FORGE_WORKSPACE_ROOT: ${{ github.workspace }}/build/conversion-fixture
+        run: |
+          rm -rf build/conversion-fixture
+          mkdir -p build/conversion-fixture/source build/conversion-fixture/build
+          cp tests/fixtures/existing-box.json build/conversion-fixture/original.json
+          cat > build/conversion-fixture/source/model.py <<'PY'
+          class TranslatedBox:
+              length = 20.0
+              width = 10.0
+              height = 5.0
+
+              def build(self):
+                  return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
+
+          TranslatedBox()
+          PY
+          python - <<'PY'
+          from forge_mcp import compiler
+          result = compiler.compile_model("source/model.py", "build/translated.json")
+          assert result["ok"], result
+          print(result)
+          PY
+
+      - name: Test existing SolidCraft design to Forge workflow
+        if: hashFiles('pyproject.toml') != ''
+        run: |
+          docker run --rm \
+            -e SOLIDCRAFT_CONVERSION_ACCEPTANCE=1 \
+            -e SOLIDCRAFT_ORIGINAL_COMMANDS=/repo/tests/fixtures/existing-box.json \
+            -e SOLIDCRAFT_TRANSLATED_COMMANDS=/repo/build/conversion-fixture/build/translated.json \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
+            sh -c "python -m venv /tmp/conversion-venv && /tmp/conversion-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/conversion-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_conversion.py"
+
       - name: Test shared merge and cleanup policy
         run: |
           python -m pip install PyYAML==6.0.2
