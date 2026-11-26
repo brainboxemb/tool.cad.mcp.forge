@@ -15,6 +15,20 @@ Qualified baseline:
 
 The commands below use PowerShell.
 
+Use three explicit checkouts:
+
+```text
+C:\Dev\SolidCraft\
+├── forge-mcp\       # brainboxemb/tool.cad.mcp.forge
+├── forge-release\   # brainboxemb/lib.py.solidcraft.forge
+└── cad-library\     # brainboxemb/2026-011-02.cad.solidcraft
+```
+
+The CAD-library checkout is context only. Every MCP session additionally binds
+one exact owner folder such as `models\wall-hook`. That owner becomes the only
+workspace for source, build and SolidCraft tools; the AI must not select another
+model from the catalog.
+
 ## 1. Create the Conda environment
 
 Create and activate a dedicated environment:
@@ -60,7 +74,9 @@ Set-Location C:\Dev\SolidCraft
 git clone https://github.com/brainboxemb/tool.cad.mcp.forge.git forge-mcp
 git -C forge-mcp switch main
 
-python -m pip install .\forge-mcp
+python -m pip install -e .\forge-mcp
+
+git clone https://github.com/brainboxemb/2026-011-02.cad.solidcraft.git cad-library
 ```
 
 Record the executable path that VS Code must start:
@@ -95,21 +111,23 @@ For the remaining examples:
 $SolidCraftCli = "C:\absolute\path\to\solidcraft-cli.exe"
 ```
 
-## 5. Choose the CAD workspace
+## 5. Select the exact CAD-library model owner
 
-The MCP only reads or writes inside one explicitly configured workspace.
-Create or select the directory that contains the model work:
+Configure the catalog checkout plus one exact owner folder:
 
 ```powershell
-$CadWorkspace = "C:\CAD\forge-workspace"
-New-Item -ItemType Directory -Force $CadWorkspace | Out-Null
-
+$CadLibrary = "C:\Dev\SolidCraft\cad-library"
+$ModelRoot = "models\wall-hook"
 $ForgeSource = "C:\Dev\SolidCraft\forge-release"
 ```
 
-Native `.sc` files are treated as SolidCraft-owned artifacts. The MCP
-understands them through SolidCraft analysis and rendering rather than exposing
-their raw contents as source text.
+`$ModelRoot` may be relative to the CAD-library checkout. It must resolve to
+one existing directory strictly inside that checkout. Do not point it at the
+catalog root.
+
+Changing model means explicitly restarting the MCP with a different
+`--model-root`. The AI is not allowed to search the catalog for a likely
+target or switch owners implicitly.
 
 ## 6. Run the readiness check
 
@@ -117,7 +135,8 @@ Run `doctor` before configuring VS Code:
 
 ```powershell
 & $ForgeMcpExe doctor `
-  --workspace $CadWorkspace `
+  --cad-library $CadLibrary `
+  --model-root $ModelRoot `
   --forge-source $ForgeSource `
   --solidcraft-cli $SolidCraftCli
 ```
@@ -125,16 +144,21 @@ Run `doctor` before configuring VS Code:
 The command does not execute a CAD model. It checks the workspace, the exact
 Forge release and the SolidCraft CLI version.
 
-A usable installation returns JSON with:
+A usable catalog-bound installation returns JSON containing:
 
 ```json
 {
-  "ready": true
+  "ready": true,
+  "workspace": {
+    "catalog_bound": true,
+    "model_id": "wall-hook",
+    "model_relative": "models/wall-hook"
+  }
 }
 ```
 
-The nested `forge`, `solidcraft` and `workspace` objects identify the
-failing layer when `ready` is false.
+Do not start model work unless `model_id` and `model_relative` are the owner
+you intended.
 
 ## 7. Configure the VS Code Copilot harness
 
@@ -163,8 +187,10 @@ An explicit-path configuration looks like this:
       "type": "stdio",
       "command": "C:\\absolute\\path\\to\\conda\\envs\\forge-mcp\\Scripts\\forge-cad-mcp.exe",
       "args": [
-        "--workspace",
-        "C:\\CAD\\forge-workspace",
+        "--cad-library",
+        "C:\\Dev\\SolidCraft\\cad-library",
+        "--model-root",
+        "models\\wall-hook",
         "--forge-source",
         "C:\\Dev\\SolidCraft\\forge-release",
         "--solidcraft-cli",
@@ -193,8 +219,10 @@ references and configure those variables on each machine:
       "type": "stdio",
       "command": "${FORGE_MCP_EXE}",
       "args": [
-        "--workspace",
-        "${FORGE_MCP_WORKSPACE}",
+        "--cad-library",
+        "${CAD_LIBRARY_ROOT}",
+        "--model-root",
+        "${CAD_MODEL_ROOT}",
         "--forge-source",
         "${FORGE_SOURCE_ROOT}",
         "--solidcraft-cli",
@@ -220,9 +248,11 @@ recommended configuration. That path belongs to the deprecated Local harness.
 4. Start a Copilot chat and explicitly ask it to call the Forge MCP
    `environment` tool.
 5. Confirm `cad_ready: true`.
-6. Ask it to call `skill_list`. The result should include
+6. Confirm `readiness.workspace.catalog_bound: true` and verify the exact
+   `model_id` / `model_relative`.
+7. Ask it to call `skill_list`. The result should include
    `forge-modeling` and `solidcraft-to-forge`.
-7. Read the relevant `SKILL.md` through `skill_reference` before model work.
+8. Read the relevant `SKILL.md` through `skill_reference` before model work.
 
 MCP tool calls can still require normal Copilot approval. A configuration that
 appears in the editor is not sufficient evidence by itself; verify an actual
@@ -296,6 +326,11 @@ Run the configured executable directly:
 ```
 
 It must report SolidCraft `0.49.0`.
+
+### The wrong model appears
+
+Stop the MCP. Check `--cad-library` and `--model-root`, then run `doctor`
+again. Do not ask the AI to search the catalog for the correct owner.
 
 ### The MCP starts but CAD is not ready
 
