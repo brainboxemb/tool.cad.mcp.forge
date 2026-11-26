@@ -24,7 +24,7 @@ Check the complete environment without executing CAD:
 ```sh
 forge-cad-mcp doctor \
   --cad-library /absolute/path/to/cad-library \
-  --model-root models/wall-hook \
+  --model-root models/assemblies/simple_mft_assembly \
   --forge-source /absolute/path/to/forge-release \
   --solidcraft-cli /absolute/path/to/solidcraft-cli
 ```
@@ -40,7 +40,7 @@ Use the same stdio server from VS Code, Claude, Codex or another MCP client. Ada
   "command": "/absolute/path/to/venv/bin/forge-cad-mcp",
   "args": [
     "--cad-library", "/absolute/path/to/cad-library",
-    "--model-root", "models/wall-hook",
+    "--model-root", "models/assemblies/simple_mft_assembly",
     "--forge-source", "/absolute/path/to/forge-release",
     "--solidcraft-cli", "/absolute/path/to/solidcraft-cli"
   ]
@@ -126,4 +126,4 @@ For catalog work, bind one exact model owner with `--cad-library` plus
 `--model-root`. The MCP never chooses a target model from the catalog itself.
 All workspace, build and runtime paths are bounded to that owner folder.
 
-Assemblies/subassemblies can reuse components from the same CAD-library checkout. The target owner stays the only writable workspace; exact dependency owners can be inspected read-only with `catalog_dependency_list` / `catalog_dependency_read`, and `forge_compile` resolves existing `from models...` imports against the configured catalog root.
+Assemblies/subassemblies can reuse components from the same CAD-library checkout. The target owner stays the only writable workspace; exact dependency owners can be inspected read-only with `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)`. Forge itself resolves existing `from models...` imports from a source below the catalog's `models/` tree, so MCP does not invent a second component-loading mechanism.
