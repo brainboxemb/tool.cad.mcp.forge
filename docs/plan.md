@@ -4,11 +4,12 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-The qualified local MCP baseline is integrated on `dev`. `main` is still the
-pre-product bootstrap baseline and must not be treated as containing the usable
-MCP yet.
+The first usable local Forge MCP baseline is stable on `main` at
+`80e03b6395f53cfe7c69f08c56612b9914e29536`. Stable qualification run
+`45781197700` passed the package, real SolidCraft runtime, existing-design
+conversion and repository-policy gates.
 
-The qualified development baseline includes:
+The stable baseline includes:
 
 - FastMCP 2.14.7 with stdio as the normal local client transport;
 - Forge/SCPF 0.19.0 at the exact supported release checkout;
@@ -42,17 +43,17 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — first stable product baseline
+### WS1 — stable-baseline reconciliation
 
-Issue #16 owns the explicit `dev -> main` promotion after this plan
-reconciliation and a green dev baseline. This promotion does not create a
-version tag or GitHub Release.
+Issue #23 reconciles this plan after the first successful stable product
+promotion. No runtime, version, tag or release behavior changes in this
+workstream.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #16 | dev -> main | now | Promote the qualified local MCP baseline after green dev CI |
+| #23 | dev/docs | now | Merge the stable-baseline plan reconciliation |
 
 ## Recently completed
 
@@ -65,9 +66,11 @@ version tag or GitHub Release.
   acceptance.
 - #13 explicit local-client startup, doctor readiness and qualified FastMCP
   pin.
+- #16 first qualified `dev -> main` product promotion.
+- #21 one-time bootstrap CI alignment required to remove the initial
+  add/add workflow conflict before #16.
 
 ## Next checkpoint
 
-Complete #16 as the first `dev -> main` product promotion after the current
-`dev` head and promotion PR are green. Decide version/tag/release packaging only
-after the stable baseline exists.
+Finish #23, then decide the first version/tag/release packaging from the stable
+`main` baseline. Do not add a Docker distribution merely to publish the MCP.
