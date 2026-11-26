@@ -9,7 +9,7 @@ requires-python = ">=3.11"
 dependencies = ["fastmcp>=2,<3"]
 
 [project.optional-dependencies]
-test = ["pytest>=8,<9"]
+test = ["pytest>=8,<9", "Pillow>=10"]
 
 [project.scripts]
 forge-cad-mcp = "forge_mcp.server:main"
