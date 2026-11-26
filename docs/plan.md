@@ -43,17 +43,18 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — stable-baseline reconciliation
+### WS1 — Windows local-client setup
 
-Issue #23 reconciles this plan after the first successful stable product
-promotion. No runtime, version, tag or release behavior changes in this
+Issue #25 documents the qualified Windows + VS Code + Conda setup using the
+current Copilot-harness `mcpServers` format, explicit local paths and the
+existing `doctor` readiness gate. No runtime behavior changes in this
 workstream.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #23 | dev/docs | now | Merge the stable-baseline plan reconciliation |
+| #25 | dev/docs | now | Qualify and publish the Windows VS Code + Conda setup guide |
 
 ## Recently completed
 
@@ -72,5 +73,5 @@ workstream.
 
 ## Next checkpoint
 
-Finish #23, then decide the first version/tag/release packaging from the stable
+Finish #25, then decide the first version/tag/release packaging from the stable
 `main` baseline. Do not add a Docker distribution merely to publish the MCP.
