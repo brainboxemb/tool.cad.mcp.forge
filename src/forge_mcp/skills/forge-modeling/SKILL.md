@@ -19,4 +19,6 @@ Knowledge, workspace editing and Forge compilation are separate capabilities. fo
 
 ## Target model invariant
 
-The configured model root is authoritative. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
+The configured model root is the authoritative target and the only writable owner. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
+
+Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list` and `catalog_dependency_read` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never be used to replace target selection. Forge compilation resolves existing `from models...` imports against the configured CAD-library root.
