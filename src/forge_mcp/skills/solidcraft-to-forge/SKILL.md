@@ -14,11 +14,11 @@ Use this skill when the user supplies a SolidCraft .sc file, JSON export, or bot
 5. Compile the Python with forge_compile to release-matched SolidCraft command JSON and replay it with solidcraft_replay. Analyze both original and generated .sc models with solidcraft_analyze, then render matching views with solidcraft_snapshot. Compare parameters and required geometric/structural evidence before using the image as an additional visual check. Inspect and render both designs with matching views. Compare required geometric and structural properties using the existing verification tooling. Record tolerance, evidence, unsupported features and any meaningful difference. Iterate on the Python source.
 6. Deliver Python source plus the verification evidence; keep the original intact. If only JSON is available and no native geometry can be recovered, mark the geometry comparison unavailable.
 
-This workflow is a specification for planned execution tools, not evidence that import, inspection, rendering or comparison already works. Consult environment and tool discovery; report unavailable capabilities explicitly. Real input formats and CLI behavior must be qualified under issue #5.
+The replay, native analysis, component inspection, snapshot and independent conversion paths are qualified in the current local baseline. Still consult environment readiness and report unavailable capabilities explicitly.
 
 
 ## Target model invariant
 
 The configured model root is the authoritative target and the only writable owner. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
 
-Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list` and `catalog_dependency_read` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never be used to replace target selection. Forge compilation resolves existing `from models...` imports against the configured CAD-library root.
+Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never be used to replace target selection. Forge's own model import context resolves existing `from models...` imports from target source below the catalog `models/` tree.
