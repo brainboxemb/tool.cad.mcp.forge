@@ -5,7 +5,7 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import compiler, skills, workspace
+from . import compiler, runtime, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
@@ -67,6 +67,34 @@ def forge_compile(source_path: str, output_path: str = "build/solidcraft.json") 
     """Compile trusted local workspace Python Forge source to command JSON without starting SolidCraft."""
     return compiler.compile_model(source_path, output_path)
 
+@mcp.tool
+def solidcraft_replay(
+    commands_path: str = "build/solidcraft.json",
+    native_path: str = "build/model.sc",
+) -> dict:
+    """Replay generated build JSON into a native SolidCraft .sc model."""
+    return runtime.replay(commands_path, native_path)
+
+@mcp.tool
+def solidcraft_evaluate(
+    model_path: str,
+    output_path: str = "build/measurements.json",
+    include_full: bool = False,
+) -> dict:
+    """Evaluate a native SolidCraft model and return compact measurements/history evidence."""
+    return runtime.evaluate(model_path, output_path, include_full)
+
+@mcp.tool
+def solidcraft_snapshot(
+    model_path: str,
+    output_path: str = "build/model.png",
+    width: int = 800,
+    height: int = 600,
+    camera: dict | None = None,
+) -> Image:
+    """Render a native SolidCraft model to a PNG that the MCP client can inspect visually."""
+    return Image(data=runtime.snapshot(model_path, output_path, width, height, camera), format="png")
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
     parser.add_argument("--transport", choices=["stdio", "http"], default="stdio")
@@ -74,6 +102,7 @@ def main() -> None:
     args = parser.parse_args()
     workspace.set_write_enabled(args.transport == "stdio")
     compiler.set_execution_enabled(args.transport == "stdio")
+    runtime.set_execution_enabled(args.transport == "stdio")
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     else:

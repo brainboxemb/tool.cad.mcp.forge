@@ -34,6 +34,43 @@ jobs:
         run: |
           python -m pip install '.[test]' ./forge-release/cadlib
           FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
+      - name: Prepare compiled SolidCraft runtime fixture
+        if: hashFiles('pyproject.toml') != ''
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+          FORGE_WORKSPACE_ROOT: ${{ github.workspace }}/build/runtime-fixture
+        run: |
+          rm -rf build/runtime-fixture
+          mkdir -p build/runtime-fixture/source
+          cat > build/runtime-fixture/source/model.py <<'PY'
+          class RuntimeBox:
+              length = 20.0
+              width = 10.0
+              height = 5.0
+
+              def build(self):
+                  return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
+
+          RuntimeBox()
+          PY
+          python - <<'PY'
+          from forge_mcp import compiler
+          result = compiler.compile_model("source/model.py")
+          assert result["ok"], result
+          print(result)
+          PY
+
+      - name: Test released SolidCraft runtime through MCP
+        if: hashFiles('pyproject.toml') != ''
+        run: |
+          docker run --rm \
+            -e SOLIDCRAFT_RUNTIME_ACCEPTANCE=1 \
+            -e SOLIDCRAFT_TEST_COMMANDS=/repo/build/runtime-fixture/build/solidcraft.json \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
+            sh -lc "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install '.[test]' && /tmp/mcp-venv/bin/python -m pytest -q tests/test_runtime.py"
+
       - name: Test shared merge and cleanup policy
         run: |
           python -m pip install PyYAML==6.0.2
