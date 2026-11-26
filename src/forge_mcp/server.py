@@ -65,6 +65,16 @@ def workspace_write(path: str, content: str, expected_sha256: str | None = None)
     return workspace.write_source(path, content, expected_sha256)
 
 @mcp.tool
+def catalog_dependency_list(owner: str, limit: int = 200) -> dict:
+    """List one exact model owner elsewhere in the configured CAD library, read-only."""
+    return workspace.catalog_dependency_list(owner, limit)
+
+@mcp.tool
+def catalog_dependency_read(path: str) -> dict:
+    """Read one exact text file from a CAD-library dependency owner, read-only."""
+    return workspace.catalog_dependency_read(path)
+
+@mcp.tool
 def model_input_summary(path: str) -> dict:
     """Classify .sc/.json/.py model input compactly before deciding how to inspect it."""
     return analysis.input_summary(path)
