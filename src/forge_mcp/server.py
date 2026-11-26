@@ -9,7 +9,7 @@ from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
 from . import analysis, compiler, diagnostics, runtime, skills, workspace
 
-mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
+mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners through read-only library tools, but never fuzzy-search, switch, or edit another owner implicitly.")
 
 # Fixed transport diagnostic only; never evidence of a CAD render.
 _DIAGNOSTIC_PNG = base64.b64decode(
@@ -56,8 +56,18 @@ def workspace_list(path: str = ".", limit: int = 200) -> dict:
 
 @mcp.tool
 def workspace_read(path: str) -> dict:
-    """Read one UTF-8 Python or JSON file with a content hash; native .sc is inspected via SolidCraft."""
+    """Read one UTF-8 source/metadata file from the configured target owner."""
     return workspace.read_file(path)
+
+@mcp.tool
+def library_list_owner(owner: str, path: str = ".", limit: int = 200) -> dict:
+    """List files below one explicitly named model owner in the same CAD library, read-only."""
+    return workspace.library_list_owner(owner, path, limit)
+
+@mcp.tool
+def library_read_owner(owner: str, path: str) -> dict:
+    """Read one file from one explicitly named model owner in the same CAD library, read-only."""
+    return workspace.library_read_owner(owner, path)
 
 @mcp.tool
 def workspace_write(path: str, content: str, expected_sha256: str | None = None) -> dict:
@@ -122,8 +132,14 @@ def solidcraft_snapshot(
     return Image(data=runtime.snapshot(model_path, output_path, width, height, camera), format="png")
 
 def _configure(args) -> None:
-    if args.workspace:
+    if args.cad_library and args.model_root:
+        os.environ["CAD_LIBRARY_ROOT"] = args.cad_library
+        os.environ["CAD_MODEL_ROOT"] = args.model_root
+        os.environ.pop("FORGE_WORKSPACE_ROOT", None)
+    elif args.workspace:
         os.environ["FORGE_WORKSPACE_ROOT"] = args.workspace
+        os.environ.pop("CAD_LIBRARY_ROOT", None)
+        os.environ.pop("CAD_MODEL_ROOT", None)
     if args.forge_source:
         os.environ["FORGE_SOURCE_ROOT"] = args.forge_source
     if args.solidcraft_cli:
@@ -134,12 +150,18 @@ def _configure(args) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
     parser.add_argument("mode", nargs="?", choices=["serve", "doctor"], default="serve")
-    parser.add_argument("--workspace", help="Explicit local CAD workspace root")
+    parser.add_argument("--workspace", help="Standalone workspace root; use only for non-catalog work")
+    parser.add_argument("--cad-library", help="Concrete CAD/model catalog checkout")
+    parser.add_argument("--model-root", help="Exact target owner below models/ containing model.yml; may be relative to --cad-library")
     parser.add_argument("--forge-source", help="Exact supported Forge release checkout")
     parser.add_argument("--solidcraft-cli", help="SolidCraft CLI executable path or command")
     parser.add_argument("--transport", choices=["stdio", "http"], default="stdio")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
+    if bool(args.cad_library) != bool(args.model_root):
+        parser.error("--cad-library and --model-root must be supplied together")
+    if args.workspace and (args.cad_library or args.model_root):
+        parser.error("--workspace cannot be combined with --cad-library/--model-root")
     _configure(args)
 
     if args.mode == "doctor":

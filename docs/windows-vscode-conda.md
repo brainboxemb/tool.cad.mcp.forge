@@ -95,21 +95,34 @@ For the remaining examples:
 $SolidCraftCli = "C:\absolute\path\to\solidcraft-cli.exe"
 ```
 
-## 5. Choose the CAD workspace
+## 5. Check out the CAD library and choose the target owner
 
-The MCP only reads or writes inside one explicitly configured workspace.
-Create or select the directory that contains the model work:
+Use a third checkout for the CAD/model catalog. The example below uses the
+current catalog and its development lane:
 
 ```powershell
-$CadWorkspace = "C:\CAD\forge-workspace"
-New-Item -ItemType Directory -Force $CadWorkspace | Out-Null
+Set-Location C:\Dev\SolidCraft
+git clone https://github.com/brainboxemb/2026-011-02.cad.solidcraft.git cad-library
+git -C cad-library switch dev
 
+$CadLibrary = "C:\Dev\SolidCraft\cad-library"
+$ModelRoot = "models\assemblies\simple_mft_assembly"
 $ForgeSource = "C:\Dev\SolidCraft\forge-release"
 ```
 
-Native `.sc` files are treated as SolidCraft-owned artifacts. The MCP
-understands them through SolidCraft analysis and rendering rather than exposing
-their raw contents as source text.
+`$ModelRoot` must name one exact owner below `models\` that contains
+`model.yml`. It is the only owner the MCP may edit or write build output
+under.
+
+Assemblies can still reuse components from elsewhere in the same checkout. The
+MCP exposes exact-owner read-only dependency tools for that purpose. For
+example, `simple_mft_assembly` imports owners such as
+`models/components/simple_mft`, `guide_rail` and
+`mounting_rail_m8`. Reading those dependencies does not switch the editing
+target.
+
+Native `.sc` files are treated as SolidCraft-owned artifacts and are
+understood through SolidCraft analysis/rendering rather than raw text.
 
 ## 6. Run the readiness check
 
@@ -117,13 +130,15 @@ Run `doctor` before configuring VS Code:
 
 ```powershell
 & $ForgeMcpExe doctor `
-  --workspace $CadWorkspace `
+  --cad-library $CadLibrary `
+  --model-root $ModelRoot `
   --forge-source $ForgeSource `
   --solidcraft-cli $SolidCraftCli
 ```
 
-The command does not execute a CAD model. It checks the workspace, the exact
-Forge release and the SolidCraft CLI version.
+The command does not execute a CAD model. It checks the exact target owner,
+its containing CAD library, the Forge release and the SolidCraft CLI version.
+The JSON also reports `model_id` and `model_relative`.
 
 A usable installation returns JSON with:
 
@@ -163,8 +178,10 @@ An explicit-path configuration looks like this:
       "type": "stdio",
       "command": "C:\\absolute\\path\\to\\conda\\envs\\forge-mcp\\Scripts\\forge-cad-mcp.exe",
       "args": [
-        "--workspace",
-        "C:\\CAD\\forge-workspace",
+        "--cad-library",
+        "C:\\Dev\\SolidCraft\\cad-library",
+        "--model-root",
+        "models\\assemblies\\simple_mft_assembly",
         "--forge-source",
         "C:\\Dev\\SolidCraft\\forge-release",
         "--solidcraft-cli",
@@ -193,8 +210,10 @@ references and configure those variables on each machine:
       "type": "stdio",
       "command": "${FORGE_MCP_EXE}",
       "args": [
-        "--workspace",
-        "${FORGE_MCP_WORKSPACE}",
+        "--cad-library",
+        "${CAD_LIBRARY_ROOT}",
+        "--model-root",
+        "${CAD_MODEL_ROOT}",
         "--forge-source",
         "${FORGE_SOURCE_ROOT}",
         "--solidcraft-cli",
@@ -219,7 +238,8 @@ recommended configuration. That path belongs to the deprecated Local harness.
 3. Confirm that `forgeCad` is enabled and not in an error state.
 4. Start a Copilot chat and explicitly ask it to call the Forge MCP
    `environment` tool.
-5. Confirm `cad_ready: true`.
+5. Confirm `cad_ready: true`, the expected `model_id`, and the expected
+   `model_relative`.
 6. Ask it to call `skill_list`. The result should include
    `forge-modeling` and `solidcraft-to-forge`.
 7. Read the relevant `SKILL.md` through `skill_reference` before model work.
@@ -265,7 +285,7 @@ git -C C:\Dev\SolidCraft\forge-mcp pull --ff-only
 python -m pip install --upgrade C:\Dev\SolidCraft\forge-mcp
 ```
 
-Then run `doctor` again with the same paths.
+Then run `doctor` again with the same CAD-library/model-root paths.
 
 Do not automatically update `forge-release`. Its exact revision is part of
 the MCP compatibility contract. When the supported Forge version changes,
@@ -300,7 +320,21 @@ It must report SolidCraft `0.49.0`.
 ### The MCP starts but CAD is not ready
 
 Call the MCP `environment` tool. Its `readiness` object reports the same
-path-free readiness state as `doctor`.
+path-free readiness state as `doctor`. Confirm that `model_id` and
+`model_relative` identify the intended owner.
+
+### Doctor says the target is not an owner
+
+The selected model root must be inside the configured CAD library, below
+`models\`, and contain `model.yml`. Point at the owner directory itself,
+not its `scpf\` subdirectory.
+
+### An assembly imports another component
+
+Keep the assembly as the target. Do not start writing into the component owner.
+Forge resolves `models.components...` imports from the same catalog checkout.
+The AI can inspect that exact dependency owner with `library_read_owner` or
+`library_list_owner`, both read-only.
 
 ### VS Code does not show the server
 

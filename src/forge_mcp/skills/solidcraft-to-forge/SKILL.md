@@ -14,4 +14,12 @@ Use this skill when the user supplies a SolidCraft .sc file, JSON export, or bot
 5. Compile the Python with forge_compile to release-matched SolidCraft command JSON and replay it with solidcraft_replay. Analyze both original and generated .sc models with solidcraft_analyze, then render matching views with solidcraft_snapshot. Compare parameters and required geometric/structural evidence before using the image as an additional visual check. Inspect and render both designs with matching views. Compare required geometric and structural properties using the existing verification tooling. Record tolerance, evidence, unsupported features and any meaningful difference. Iterate on the Python source.
 6. Deliver Python source plus the verification evidence; keep the original intact. If only JSON is available and no native geometry can be recovered, mark the geometry comparison unavailable.
 
-This workflow is a specification for planned execution tools, not evidence that import, inspection, rendering or comparison already works. Consult environment and tool discovery; report unavailable capabilities explicitly. Real input formats and CLI behavior must be qualified under issue #5.
+The replay, native analysis, component inspection, snapshot and independent conversion paths are qualified in the current local baseline. Still consult environment readiness and report unavailable capabilities explicitly.
+
+
+## Target owner and dependency owners
+
+Keep the configured target owner authoritative for any translated Python source.
+If that owner is an assembly, inspect explicitly imported component/subassembly
+owners with `library_read_owner` or `library_list_owner`. Dependency access
+is read-only and does not change the target owner.

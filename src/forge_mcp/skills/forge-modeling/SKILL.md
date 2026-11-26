@@ -15,3 +15,17 @@ Use this skill when creating or changing a Python Forge model. The Python source
 6. State missing inputs, unsupported features and failed checks; never claim successful CAD verification from source inspection alone.
 
 Knowledge, workspace editing and Forge compilation are separate capabilities. forge_compile executes the trusted local Python model and is available only on the local stdio server. SolidCraft replay, evaluation and snapshot rendering are available on the trusted local stdio server. Check environment and tool discovery before attempting unavailable tools. If converting a native design, start with solidcraft-to-forge.
+
+
+## Target owner and dependency owners
+
+The configured target owner is authoritative for edits and build outputs. Never
+search the surrounding catalog for a new target, choose a similarly named
+owner, or switch owners implicitly.
+
+Assemblies and subassemblies may reuse components from other owners in the same
+CAD library. When the target source contains an explicit import such as
+`models.components.simple_mft...`, use `library_read_owner` or
+`library_list_owner` with that exact owner path to inspect the dependency.
+Those library tools are read-only. Do not modify a dependency owner unless the
+user starts a session with that owner as the configured target.

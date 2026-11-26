@@ -86,3 +86,49 @@ def test_workspace_blocks_escape_symlink_and_remote_write(tmp_path, monkeypatch)
         asyncio.run(run())
     finally:
         workspace.set_write_enabled(True)
+
+
+def test_catalog_target_is_write_scope_but_dependency_owner_is_readable(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    selected = library / "models" / "assemblies" / "selected"
+    dependency = library / "models" / "components" / "shared"
+    selected.mkdir(parents=True)
+    dependency.mkdir(parents=True)
+    (selected / "model.yml").write_text("title: Selected\n", encoding="utf-8")
+    (dependency / "model.yml").write_text("title: Shared\n", encoding="utf-8")
+    (selected / "model.py").write_text("selected = True\n", encoding="utf-8")
+    (dependency / "model.py").write_text("shared = True\n", encoding="utf-8")
+
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/selected")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    status = workspace.status()
+    assert status["catalog_bound"] is True
+    assert status["model_id"] == "selected"
+    assert status["model_relative"] == "models/assemblies/selected"
+    assert "root" not in status
+
+    assert workspace.read_file("model.py")["content"] == "selected = True\n"
+    dependency_read = workspace.library_read_owner(
+        "models/components/shared", "model.py"
+    )
+    assert dependency_read["content"] == "shared = True\n"
+    assert dependency_read["read_only"] is True
+
+    with pytest.raises(workspace.WorkspaceError):
+        workspace.read_file("../../components/shared/model.py")
+    with pytest.raises(workspace.WorkspaceError):
+        workspace.library_read_owner("models/components", "shared/model.py")
+
+
+def test_catalog_target_must_be_exact_owner_with_model_yml(tmp_path, monkeypatch):
+    library = tmp_path / "catalog"
+    folder = library / "models" / "assemblies" / "not-owner"
+    folder.mkdir(parents=True)
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/not-owner")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+
+    with pytest.raises(workspace.WorkspaceError, match="model.yml"):
+        workspace.status()

@@ -53,3 +53,33 @@ The SolidCraft adapter stores one configured CLI executable instead of assuming 
 `doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.19.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
 
 No VS Code/Claude/Codex-specific adapter exists. Their configuration points to the same stdio executable with the same arguments.
+
+
+## Target owner and read-only catalog dependencies
+
+Catalog sessions separate the **target owner** from the broader CAD library.
+`CAD_LIBRARY_ROOT` points at one concrete catalog checkout. `CAD_MODEL_ROOT`
+points at one exact owner below `models/`; the directory must contain
+`model.yml`. That owner becomes the workspace root for all edits and generated
+`build/` outputs.
+
+The broader CAD library is not writable through MCP, but assemblies must be
+able to understand and reuse components from other owners. Two explicit-owner
+tools provide this: `library_list_owner(owner, ...)` and
+`library_read_owner(owner, ...)`. Both require an exact owner containing
+`model.yml`; neither can enumerate the catalog root or write dependency
+files. This lets an assembly inspect an import such as
+`models.components.simple_mft...` without turning that component into the
+editing target.
+
+Forge already resolves the repository root from a model source path below a
+`models/` ancestor during `run_script`. Therefore compiling the selected
+assembly source naturally supports `from models.components... import ...`
+without adding a caller-controlled PYTHONPATH. CI explicitly qualifies this
+cross-owner import path.
+
+The target identity is path-free over MCP: `environment` and
+`workspace_status` expose `model_id` and `model_relative`. Absolute target
+and catalog paths are included only in local `doctor` output. CLI arguments
+override inherited environment state so one MCP process cannot accidentally
+retain a previous catalog binding.

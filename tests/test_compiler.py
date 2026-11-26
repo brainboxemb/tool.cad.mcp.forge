@@ -90,3 +90,58 @@ def test_compile_restricts_output_source_and_transport(tmp_path, monkeypatch):
         asyncio.run(run())
     finally:
         compiler.set_execution_enabled(True)
+
+
+def test_catalog_target_can_compile_imported_component_owner(tmp_path, monkeypatch):
+    if not os.environ.get("FORGE_SOURCE_ROOT"):
+        pytest.fail("Real Forge checkout is required for compile acceptance")
+
+    library = tmp_path / "catalog"
+    component = library / "models" / "components" / "shared_block"
+    target = library / "models" / "assemblies" / "sample_assembly"
+    (component / "scpf").mkdir(parents=True)
+    (target / "scpf").mkdir(parents=True)
+    (component / "model.yml").write_text("title: Shared Block\n", encoding="utf-8")
+    (target / "model.yml").write_text("title: Sample Assembly\n", encoding="utf-8")
+    (component / "scpf" / "model.py").write_text(
+        "from scpf import Anchor, Box, component\n"
+        "@component\n"
+        "class SharedBlock:\n"
+        "    def build(self):\n"
+        "        return Box(12, 8, 4, anchor=Anchor.BOTTOM)\n",
+        encoding="utf-8",
+    )
+    (target / "scpf" / "model.py").write_text(
+        "from models.components.shared_block.scpf.model import SharedBlock\n"
+        "class SampleAssembly:\n"
+        "    def build(self):\n"
+        "        return SharedBlock()\n"
+        "SampleAssembly()\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("CAD_LIBRARY_ROOT", str(library))
+    monkeypatch.setenv("CAD_MODEL_ROOT", "models/assemblies/sample_assembly")
+    monkeypatch.delenv("FORGE_WORKSPACE_ROOT", raising=False)
+    compiler.set_execution_enabled(True)
+
+    async def run():
+        async with Client(mcp) as client:
+            dependency = await client.call_tool(
+                "library_read_owner",
+                {
+                    "owner": "models/components/shared_block",
+                    "path": "scpf/model.py",
+                },
+            )
+            assert dependency.data["read_only"] is True
+            assert "class SharedBlock" in dependency.data["content"]
+
+            result = await client.call_tool(
+                "forge_compile",
+                {"source_path": "scpf/model.py", "output_path": "build/solidcraft.json"},
+            )
+            assert not result.is_error
+            assert result.data["ok"] is True
+            assert result.data["commands"] > 0
+
+    asyncio.run(run())

@@ -29,14 +29,22 @@ def _forge_root() -> str:
     return value
 
 
-def test_doctor_accepts_explicit_paths_without_running_cad(tmp_path):
+def _catalog(tmp_path: Path):
+    library = tmp_path / "cad-library"
+    model = library / "models" / "assemblies" / "wall-hook-assembly"
+    model.mkdir(parents=True)
+    (model / "model.yml").write_text("title: Wall Hook Assembly\n", encoding="utf-8")
+    return library, model
+
+
+def test_doctor_accepts_explicit_catalog_and_owner(tmp_path):
     cli = _fake_solidcraft(tmp_path)
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
+    library, model = _catalog(tmp_path)
     result = subprocess.run(
         [
             sys.executable, "-m", "forge_mcp.server", "doctor",
-            "--workspace", str(workspace),
+            "--cad-library", str(library),
+            "--model-root", "models/assemblies/wall-hook-assembly",
             "--forge-source", _forge_root(),
             "--solidcraft-cli", str(cli),
         ],
@@ -49,17 +57,23 @@ def test_doctor_accepts_explicit_paths_without_running_cad(tmp_path):
     assert report["ready"] is True
     assert report["forge"]["version"] == "0.19.0"
     assert report["solidcraft"]["version"] == "0.49.0"
-    assert report["workspace"]["root"] == str(workspace.resolve())
+    assert report["workspace"]["catalog_bound"] is True
+    assert report["workspace"]["model_id"] == "wall-hook-assembly"
+    assert report["workspace"]["model_relative"] == "models/assemblies/wall-hook-assembly"
+    assert report["workspace"]["root"] == str(model.resolve())
+    assert report["workspace"]["cad_library_root"] == str(library.resolve())
 
 
-def test_doctor_rejects_wrong_solidcraft_version(tmp_path):
-    cli = _fake_solidcraft(tmp_path, "0.48.1")
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
+def test_doctor_rejects_non_owner_directory(tmp_path):
+    cli = _fake_solidcraft(tmp_path)
+    library = tmp_path / "cad-library"
+    non_owner = library / "models" / "assemblies" / "not-an-owner"
+    non_owner.mkdir(parents=True)
     result = subprocess.run(
         [
             sys.executable, "-m", "forge_mcp.server", "doctor",
-            "--workspace", str(workspace),
+            "--cad-library", str(library),
+            "--model-root", "models/assemblies/not-an-owner",
             "--forge-source", _forge_root(),
             "--solidcraft-cli", str(cli),
         ],
@@ -68,20 +82,43 @@ def test_doctor_rejects_wrong_solidcraft_version(tmp_path):
         check=False,
     )
     assert result.returncode == 1
-    report = json.loads(result.stdout)
-    assert report["ready"] is False
-    assert report["solidcraft"]["version"] == "0.48.1"
+    assert "model.yml" in json.loads(result.stdout)["workspace"]["error"]
 
 
-def test_real_stdio_subprocess_uses_explicit_client_arguments(tmp_path):
+def test_workspace_argument_overrides_inherited_catalog_environment(tmp_path):
     cli = _fake_solidcraft(tmp_path)
-    workspace = tmp_path / "workspace"
-    workspace.mkdir()
+    standalone = tmp_path / "standalone"
+    standalone.mkdir()
+    env = os.environ.copy()
+    env["CAD_LIBRARY_ROOT"] = str(tmp_path / "missing-library")
+    env["CAD_MODEL_ROOT"] = "models/components/missing"
+    result = subprocess.run(
+        [
+            sys.executable, "-m", "forge_mcp.server", "doctor",
+            "--workspace", str(standalone),
+            "--forge-source", _forge_root(),
+            "--solidcraft-cli", str(cli),
+        ],
+        env=env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    report = json.loads(result.stdout)
+    assert report["workspace"]["catalog_bound"] is False
+    assert report["workspace"]["root"] == str(standalone.resolve())
+
+
+def test_real_stdio_subprocess_reports_path_free_target_identity(tmp_path):
+    cli = _fake_solidcraft(tmp_path)
+    library, _ = _catalog(tmp_path)
     transport = StdioTransport(
         command=sys.executable,
         args=[
             "-m", "forge_mcp.server",
-            "--workspace", str(workspace),
+            "--cad-library", str(library),
+            "--model-root", "models/assemblies/wall-hook-assembly",
             "--forge-source", _forge_root(),
             "--solidcraft-cli", str(cli),
         ],
@@ -91,9 +128,16 @@ def test_real_stdio_subprocess_uses_explicit_client_arguments(tmp_path):
         async with Client(transport) as client:
             result = await client.call_tool("environment", {})
             assert not result.is_error
-            assert result.data["cad_ready"] is True
-            assert result.data["readiness"]["solidcraft"]["version"] == "0.49.0"
+            workspace = result.data["readiness"]["workspace"]
+            assert workspace["catalog_bound"] is True
+            assert workspace["model_id"] == "wall-hook-assembly"
+            assert workspace["model_relative"] == "models/assemblies/wall-hook-assembly"
+            assert "root" not in workspace
+            assert "cad_library_root" not in workspace
+
             status = await client.call_tool("workspace_status", {})
-            assert status.data["root"] == str(workspace.resolve())
+            assert status.data["model_relative"] == "models/assemblies/wall-hook-assembly"
+            assert "root" not in status.data
+            assert "cad_library_root" not in status.data
 
     asyncio.run(run())

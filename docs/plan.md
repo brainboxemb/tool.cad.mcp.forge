@@ -43,18 +43,18 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — Windows local-client setup
+### WS1 — explicit target owner with catalog dependency reads
 
-Issue #25 documents the qualified Windows + VS Code + Conda setup using the
-current Copilot-harness `mcpServers` format, explicit local paths and the
-existing `doctor` readiness gate. No runtime behavior changes in this
-workstream.
+Issue #26 binds one MCP session to one exact target owner while preserving
+read-only access to explicitly referenced component/subassembly owners in the
+same CAD library. This is required for real assemblies such as Simple MFT and
+HUB75 models that import reusable components across owner boundaries.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #25 | dev/docs | now | Qualify and publish the Windows VS Code + Conda setup guide |
+| #26 | dev | now | Qualify target-owner writes plus explicit read-only dependency owners |
 
 ## Recently completed
 
@@ -70,8 +70,10 @@ workstream.
 - #16 first qualified `dev -> main` product promotion.
 - #21 one-time bootstrap CI alignment required to remove the initial
   add/add workflow conflict before #16.
+- #25 Windows VS Code + Conda setup guide using current Copilot `mcpServers`.
 
 ## Next checkpoint
 
-Finish #25, then decide the first version/tag/release packaging from the stable
+Finish #26 and update the Windows guide to the target-owner/catalog-dependency
+contract, then decide the first version/tag/release packaging from the stable
 `main` baseline. Do not add a Docker distribution merely to publish the MCP.

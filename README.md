@@ -23,7 +23,8 @@ Check the complete environment without executing CAD:
 
 ```sh
 forge-cad-mcp doctor \
-  --workspace /absolute/path/to/model-workspace \
+  --cad-library /absolute/path/to/cad-library \
+  --model-root models/assemblies/simple_mft_assembly \
   --forge-source /absolute/path/to/forge-release \
   --solidcraft-cli /absolute/path/to/solidcraft-cli
 ```
@@ -38,7 +39,8 @@ Use the same stdio server from VS Code, Claude, Codex or another MCP client. Ada
 {
   "command": "/absolute/path/to/venv/bin/forge-cad-mcp",
   "args": [
-    "--workspace", "/absolute/path/to/model-workspace",
+    "--cad-library", "/absolute/path/to/cad-library",
+    "--model-root", "models/assemblies/simple_mft_assembly",
     "--forge-source", "/absolute/path/to/forge-release",
     "--solidcraft-cli", "/absolute/path/to/solidcraft-cli"
   ]
@@ -49,11 +51,18 @@ Windows uses the same arguments; point `command` at the environment's `Scripts\\
 
 Environment variables remain supported as alternatives:
 
-- `FORGE_WORKSPACE_ROOT`
+- `CAD_LIBRARY_ROOT`
+- `CAD_MODEL_ROOT`
+- `FORGE_WORKSPACE_ROOT` (standalone fallback)
 - `FORGE_SOURCE_ROOT`
 - `SOLIDCRAFT_CLI`
 
 Command-line values take precedence for the current server process.
+
+For catalog work, the selected owner is the only write/build target. Assemblies
+may still import other owners from the same checkout; use
+`library_read_owner`/`library_list_owner` to inspect those dependencies
+read-only. The MCP never implicitly switches the target owner.
 
 ## Skills
 

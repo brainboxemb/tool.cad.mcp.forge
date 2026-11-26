@@ -43,3 +43,11 @@
 - The MCP environment tool reports the same path-free readiness contract so a client can decide whether CAD work is available.
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
+
+
+- Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The target must be an exact owner below `models/` containing `model.yml`.
+- The target owner is the only workspace write/build-output scope. The AI must not fuzzy-search for another target, choose a similarly named owner, or switch targets implicitly.
+- The same CAD library is a bounded read-only dependency scope. `library_read_owner` and `library_list_owner` accept one explicit owner path containing `model.yml`; they never write or list the whole catalog.
+- Assemblies/subassemblies may import component owners from the same catalog. Real compilation acceptance must prove a cross-owner `models.components.*` import succeeds from the selected target.
+- Normal MCP readiness/status reports target model id and library-relative owner path without absolute filesystem paths. CLI doctor may include paths for local diagnosis.
+- Explicit `--workspace` standalone configuration clears inherited catalog binding for that server process; explicit catalog arguments clear the standalone workspace fallback.
