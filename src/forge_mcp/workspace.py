@@ -10,32 +10,56 @@ READ_SUFFIXES = frozenset({".py", ".json"})
 WRITE_SUFFIXES = frozenset({".py"})
 MAX_FILE_BYTES = 1_000_000
 MAX_LIST_LIMIT = 500
-
 _write_enabled = True
-
 
 class WorkspaceError(ValueError):
     """Workspace access is unavailable or violates the workspace contract."""
 
-
 def set_write_enabled(enabled: bool) -> None:
-    """Enable source writes for trusted local transport only."""
     global _write_enabled
     _write_enabled = bool(enabled)
 
-
-def _root() -> Path:
-    configured = os.environ.get("FORGE_WORKSPACE_ROOT")
-    if not configured:
-        raise WorkspaceError("Set FORGE_WORKSPACE_ROOT to an existing local model workspace")
-    raw = Path(configured).expanduser()
+def _plain_root(value: str, label: str) -> Path:
+    raw = Path(value).expanduser()
     if raw.is_symlink():
-        raise WorkspaceError("FORGE_WORKSPACE_ROOT may not be a symlink")
+        raise WorkspaceError(f"{label} may not be a symlink")
     root = raw.resolve()
     if not root.is_dir():
-        raise WorkspaceError("FORGE_WORKSPACE_ROOT must be an existing directory")
+        raise WorkspaceError(f"{label} must be an existing directory")
     return root
 
+def _catalog_binding() -> tuple[Path, Path] | None:
+    library_value = os.environ.get("CAD_LIBRARY_ROOT")
+    model_value = os.environ.get("CAD_MODEL_ROOT")
+    if not library_value and not model_value:
+        return None
+    if not library_value or not model_value:
+        raise WorkspaceError("Set CAD_LIBRARY_ROOT and CAD_MODEL_ROOT together")
+    library = _plain_root(library_value, "CAD_LIBRARY_ROOT")
+    raw_model = Path(model_value).expanduser()
+    if not raw_model.is_absolute():
+        raw_model = library / raw_model
+    if raw_model.is_symlink():
+        raise WorkspaceError("CAD_MODEL_ROOT may not be a symlink")
+    model = raw_model.resolve()
+    if not model.is_dir():
+        raise WorkspaceError("CAD_MODEL_ROOT must be an existing directory")
+    try:
+        relative = model.relative_to(library)
+    except ValueError as exc:
+        raise WorkspaceError("CAD_MODEL_ROOT must be inside CAD_LIBRARY_ROOT") from exc
+    if not relative.parts:
+        raise WorkspaceError("CAD_MODEL_ROOT must select one model folder, not the library root")
+    return library, model
+
+def _root() -> Path:
+    binding = _catalog_binding()
+    if binding is not None:
+        return binding[1]
+    configured = os.environ.get("FORGE_WORKSPACE_ROOT")
+    if not configured:
+        raise WorkspaceError("Set CAD_LIBRARY_ROOT + CAD_MODEL_ROOT, or FORGE_WORKSPACE_ROOT for standalone use")
+    return _plain_root(configured, "FORGE_WORKSPACE_ROOT")
 
 def _relative(path: str) -> Path:
     if not isinstance(path, str) or not path.strip():
@@ -45,7 +69,6 @@ def _relative(path: str) -> Path:
         raise WorkspaceError("Workspace path must stay inside the configured root")
     return candidate
 
-
 def _reject_symlinks(root: Path, relative: Path) -> None:
     current = root
     for part in relative.parts:
@@ -54,7 +77,6 @@ def _reject_symlinks(root: Path, relative: Path) -> None:
             raise WorkspaceError("Workspace paths may not traverse symlinks")
         if not current.exists():
             break
-
 
 def _resolve(path: str, *, must_exist: bool = False) -> tuple[Path, Path]:
     root = _root()
@@ -69,7 +91,6 @@ def _resolve(path: str, *, must_exist: bool = False) -> tuple[Path, Path]:
         raise WorkspaceError("Workspace path does not exist")
     return root, resolved
 
-
 def _file_sha(path: Path) -> str:
     digest = hashlib.sha256()
     with path.open("rb") as stream:
@@ -77,18 +98,26 @@ def _file_sha(path: Path) -> str:
             digest.update(chunk)
     return digest.hexdigest()
 
-
 def status() -> dict:
     root = _root()
-    return {
+    binding = _catalog_binding()
+    result = {
         "root": str(root),
         "write_enabled": _write_enabled,
         "discover_suffixes": sorted(DISCOVER_SUFFIXES),
         "read_suffixes": sorted(READ_SUFFIXES),
         "write_suffixes": sorted(WRITE_SUFFIXES),
         "max_file_bytes": MAX_FILE_BYTES,
+        "catalog_bound": binding is not None,
     }
-
+    if binding is not None:
+        library, model = binding
+        result.update({
+            "cad_library_root": str(library),
+            "model_id": model.name,
+            "model_relative": model.relative_to(library).as_posix(),
+        })
+    return result
 
 def list_files(path: str = ".", limit: int = 200) -> dict:
     root, directory = _resolve(path, must_exist=True)
@@ -107,7 +136,6 @@ def list_files(path: str = ".", limit: int = 200) -> dict:
             break
     return {"path": Path(path).as_posix(), "entries": rows, "truncated": len(rows) >= limit}
 
-
 def read_file(path: str) -> dict:
     root, target = _resolve(path, must_exist=True)
     if not target.is_file():
@@ -121,13 +149,7 @@ def read_file(path: str) -> dict:
         content = target.read_text(encoding="utf-8")
     except UnicodeDecodeError as exc:
         raise WorkspaceError("Workspace files must be UTF-8 text") from exc
-    return {
-        "path": target.relative_to(root).as_posix(),
-        "bytes": size,
-        "sha256": _file_sha(target),
-        "content": content,
-    }
-
+    return {"path": target.relative_to(root).as_posix(), "bytes": size, "sha256": _file_sha(target), "content": content}
 
 def write_source(path: str, content: str, expected_sha256: str | None = None) -> dict:
     if not _write_enabled:
@@ -143,8 +165,7 @@ def write_source(path: str, content: str, expected_sha256: str | None = None) ->
             raise WorkspaceError("workspace_write target is not a file")
         if expected_sha256 is None:
             raise WorkspaceError("expected_sha256 is required when replacing an existing source file")
-        actual = _file_sha(target)
-        if actual != expected_sha256:
+        if _file_sha(target) != expected_sha256:
             raise WorkspaceError("Source changed since it was read; expected_sha256 does not match")
     elif expected_sha256 is not None:
         raise WorkspaceError("expected_sha256 must be omitted when creating a new source file")
@@ -153,9 +174,4 @@ def write_source(path: str, content: str, expected_sha256: str | None = None) ->
     temporary = target.with_name(f".{target.name}.tmp")
     temporary.write_bytes(encoded)
     temporary.replace(target)
-    return {
-        "path": target.relative_to(root).as_posix(),
-        "bytes": len(encoded),
-        "sha256": _file_sha(target),
-        "created": expected_sha256 is None,
-    }
+    return {"path": target.relative_to(root).as_posix(), "bytes": len(encoded), "sha256": _file_sha(target), "created": expected_sha256 is None}
