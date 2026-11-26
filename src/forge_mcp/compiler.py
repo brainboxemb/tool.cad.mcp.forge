@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import json
-import os
 import subprocess
 import sys
 
@@ -60,17 +59,10 @@ def compile_model(source_path: str, output_path: str = "build/solidcraft.json") 
         output.unlink()
 
     command = [sys.executable, "-m", "scpf", str(source), "--out", str(output)]
-    env = os.environ.copy()
-    binding = workspace._catalog_binding()
-    if binding is not None:
-        library = str(binding[0])
-        existing = env.get("PYTHONPATH")
-        env["PYTHONPATH"] = library if not existing else library + os.pathsep + existing
     try:
         result = subprocess.run(
             command,
             cwd=root,
-            env=env,
             capture_output=True,
             text=True,
             timeout=COMPILE_TIMEOUT_SECONDS,
