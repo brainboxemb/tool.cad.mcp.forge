@@ -15,3 +15,8 @@ Use this skill when creating or changing a Python Forge model. The Python source
 6. State missing inputs, unsupported features and failed checks; never claim successful CAD verification from source inspection alone.
 
 Knowledge, workspace editing and Forge compilation are separate capabilities. forge_compile executes the trusted local Python model and is available only on the local stdio server. SolidCraft replay, evaluation and snapshot rendering are available on the trusted local stdio server. Check environment and tool discovery before attempting unavailable tools. If converting a native design, start with solidcraft-to-forge.
+
+
+## Target model invariant
+
+The configured model root is authoritative. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
