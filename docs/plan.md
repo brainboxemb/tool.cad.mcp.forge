@@ -46,9 +46,11 @@ isolated workspaces and sandboxed execution exist.
 ### WS1 — explicit CAD-library model binding
 
 Issue #26 binds catalog-backed sessions to one concrete CAD-library checkout
-and one exact model owner. The target owner is authoritative; AI workflows may
-not discover or switch target models implicitly. The Windows VS Code + Conda
-guide is updated to use the same three-checkout setup.
+and one exact writable target owner. Assemblies/subassemblies retain exact,
+read-only access to other component owners and compile existing `from models...`
+imports against the catalog root. AI workflows may not discover or switch
+target models implicitly. The Windows VS Code + Conda guide uses the same
+three-checkout setup.
 
 ## Open issue assignment
 
