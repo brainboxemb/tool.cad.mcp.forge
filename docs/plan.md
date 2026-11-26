@@ -43,17 +43,23 @@ isolated workspaces and sandboxed execution exist.
 
 ## Active workstreams
 
-### WS1 — stable-baseline reconciliation
+### WS1 — explicit local catalog/model binding
 
-Issue #23 reconciles this plan after the first successful stable product
-promotion. No runtime, version, tag or release behavior changes in this
-workstream.
+Issue #26 binds a local MCP session to one concrete CAD-library checkout and
+one exact model owner inside it. The AI must not discover or switch target
+models implicitly.
+
+### WS2 — Windows VS Code + Conda setup guide
+
+Issue #25 documents the three-checkout local setup (MCP, Forge, CAD library)
+and copy-ready client configuration after #26 is qualified.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #23 | dev/docs | now | Merge the stable-baseline plan reconciliation |
+| #26 | dev | now | Qualify explicit CAD library + model-root binding |
+| #25 | dev/docs | next | Publish Windows VS Code + Conda guide on top of #26 |
 
 ## Recently completed
 
@@ -72,5 +78,6 @@ workstream.
 
 ## Next checkpoint
 
-Finish #23, then decide the first version/tag/release packaging from the stable
-`main` baseline. Do not add a Docker distribution merely to publish the MCP.
+Qualify #26, publish the Windows VS Code + Conda guide in #25, then decide the
+first version/tag/release packaging. Do not add a Docker distribution merely
+to publish the MCP.
