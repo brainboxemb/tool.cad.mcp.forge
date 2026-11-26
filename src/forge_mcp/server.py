@@ -5,7 +5,7 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import skills, workspace
+from . import compiler, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference.")
 
@@ -24,6 +24,7 @@ def environment() -> dict:
         "fastmcp_version": version("fastmcp"),
         "transports": ["stdio", "streamable-http"],
         "workspace_configured": bool(__import__("os").environ.get("FORGE_WORKSPACE_ROOT")),
+        "forge_source_configured": bool(__import__("os").environ.get("FORGE_SOURCE_ROOT")),
     }
 
 @mcp.tool
@@ -61,12 +62,18 @@ def workspace_write(path: str, content: str, expected_sha256: str | None = None)
     """Create Python Forge source or replace it using the hash returned by workspace_read."""
     return workspace.write_source(path, content, expected_sha256)
 
+@mcp.tool
+def forge_compile(source_path: str, output_path: str = "build/solidcraft.json") -> dict:
+    """Compile trusted local workspace Python Forge source to command JSON without starting SolidCraft."""
+    return compiler.compile_model(source_path, output_path)
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Forge CAD MCP server")
     parser.add_argument("--transport", choices=["stdio", "http"], default="stdio")
     parser.add_argument("--port", type=int, default=8000)
     args = parser.parse_args()
     workspace.set_write_enabled(args.transport == "stdio")
+    compiler.set_execution_enabled(args.transport == "stdio")
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     else:

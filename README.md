@@ -55,3 +55,14 @@ forge-cad-mcp
 ```
 
 The MCP can list/read UTF-8 `.py`, `.sc` and `.json` files. It may create Python source. Replacing existing Python requires the SHA-256 returned by `workspace_read`; native `.sc` and JSON inputs are read-only. The HTTP bootstrap transport disables workspace writes.
+
+
+## Compile Forge source
+
+With FORGE_SOURCE_ROOT and FORGE_WORKSPACE_ROOT configured, local stdio clients can compile one workspace Python model without starting SolidCraft:
+
+```text
+forge_compile(source_path="source/model.py", output_path="build/solidcraft.json")
+```
+
+The generated JSON is read-only workspace evidence. Compile/model failures are returned with bounded diagnostics. HTTP bootstrap disables Python model execution.

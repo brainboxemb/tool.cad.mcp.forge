@@ -20,3 +20,7 @@
 - Workspace reads are bounded to UTF-8 .py, .sc and .json files below that root and must not follow symlinks or traversal paths.
 - MCP source editing writes only .py files. Existing source replacement requires the exact SHA-256 returned by workspace_read. Native .sc and JSON inputs are read-only through the editor.
 - The supported HTTP bootstrap transport exposes no workspace writes; writable remote work requires authentication and per-client isolation first.
+
+- forge_compile accepts only an existing workspace .py source, validates the configured Forge release, and writes command JSON only below build/.
+- Compilation invokes the supported scpf module directly without a shell. Compile failures return bounded structured stdout/stderr and remove stale output.
+- Python model execution is enabled only for the trusted local stdio transport; the HTTP bootstrap may not compile generated Python.
