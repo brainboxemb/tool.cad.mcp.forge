@@ -38,8 +38,8 @@ def test_real_forge_skill_references():
             box = json.loads(await read("references/api/Box.json"))
             assert "length" in box["signature"]
             shape = json.loads(await read("references/api/Shape.json"))
-            assert "repeat_linear" in shape["members"]
-            method = json.loads(await read("references/api/Shape.repeat_linear.json"))
+            assert "rectangular_pattern" in shape["members"]
+            method = json.loads(await read("references/api/Shape.rectangular_pattern.json"))
             assert method["signature"]
             assert "class SimpleBox" in await read("references/examples/simple-box.py")
             assert "Placement" in await read("references/api.md")
