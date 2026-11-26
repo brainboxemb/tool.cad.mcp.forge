@@ -53,6 +53,16 @@ def test_real_compile_replay_evaluate_and_snapshot(tmp_path, monkeypatch):
             assert {"length", "width", "height"} <= names
             assert evaluated.data["full_included"] is True
 
+            components = await client.call_tool(
+                "solidcraft_components",
+                {"model_path": "build/model.sc", "compact": True, "bodies": True},
+            )
+            assert not components.is_error
+            assert components.data["ok"] is True
+            assert components.data["solidcraft_version"] == "0.49.0"
+            assert components.data["result"] is not None
+            assert (tmp_path / "build" / "components.json").is_file()
+
             rendered = await client.call_tool(
                 "solidcraft_snapshot",
                 {"model_path": "build/model.sc", "width": 480, "height": 360},

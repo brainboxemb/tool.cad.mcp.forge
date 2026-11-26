@@ -85,6 +85,16 @@ def solidcraft_evaluate(
     return runtime.evaluate(model_path, output_path, include_full)
 
 @mcp.tool
+def solidcraft_components(
+    model_path: str,
+    output_path: str = "build/components.json",
+    compact: bool = True,
+    bodies: bool = False,
+) -> dict:
+    """Inspect native component/occurrence structure using fixed read-only component.list."""
+    return runtime.components(model_path, output_path, compact, bodies)
+
+@mcp.tool
 def solidcraft_snapshot(
     model_path: str,
     output_path: str = "build/model.png",

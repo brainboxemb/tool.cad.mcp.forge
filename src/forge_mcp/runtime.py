@@ -256,6 +256,88 @@ def evaluate(
     return response
 
 
+
+def components(
+    model_path: str,
+    output_path: str = "build/components.json",
+    compact: bool = True,
+    bodies: bool = False,
+) -> dict:
+    """Run the fixed read-only component.list inspection against one native model."""
+    version = _version()
+    root, model = workspace._resolve(model_path, must_exist=True)
+    if not model.is_file() or model.suffix.lower() != ".sc":
+        raise RuntimeError("solidcraft_components requires an existing .sc model")
+    if not isinstance(compact, bool) or not isinstance(bodies, bool):
+        raise RuntimeError("component inspection options must be booleans")
+
+    _, output, relative_output = _build_output(output_path, ".json")
+    script = output.with_name(".mcp-component-list.json")
+    if script.exists():
+        if script.is_symlink() or not script.is_file():
+            raise RuntimeError("Component inspection command target is not a regular file")
+        script.unlink()
+    script.write_text(
+        json.dumps(
+            {
+                "commands": [
+                    {
+                        "command": "component.list",
+                        "params": {"compact": compact, "bodies": bodies},
+                    }
+                ]
+            },
+            separators=(",", ":"),
+        ),
+        encoding="utf-8",
+    )
+    try:
+        result = _run(
+            [
+                "solidcraft-cli", "run", str(script),
+                "--in", str(model),
+                "--param-check", "strict",
+                "--results",
+                "--json-out", str(output),
+                "--quiet",
+            ],
+            cwd=root,
+        )
+    finally:
+        if script.exists():
+            script.unlink()
+
+    if result.returncode != 0:
+        if output.exists():
+            output.unlink()
+        return {
+            **_result_failure("components", result),
+            "model": model.relative_to(root).as_posix(),
+            "output": relative_output.as_posix(),
+            "solidcraft_version": version,
+        }
+    if not output.is_file() or output.stat().st_size == 0:
+        raise RuntimeError("SolidCraft component inspection produced no result")
+    if output.stat().st_size > MAX_RUNTIME_JSON_BYTES:
+        raise RuntimeError("SolidCraft component result exceeds the runtime evidence limit")
+    try:
+        data = json.loads(output.read_text(encoding="utf-8"))
+    except (UnicodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("SolidCraft produced unreadable component JSON") from exc
+    return {
+        "ok": True,
+        "operation": "components",
+        "model": model.relative_to(root).as_posix(),
+        "output": relative_output.as_posix(),
+        "bytes": output.stat().st_size,
+        "sha256": workspace._file_sha(output),
+        "solidcraft_version": version,
+        "result": data,
+        "stdout": _bounded(result.stdout),
+        "stderr": _bounded(result.stderr),
+    }
+
+
 def snapshot(
     model_path: str,
     output_path: str = "build/model.png",
