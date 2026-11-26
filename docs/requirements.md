@@ -17,8 +17,8 @@
 - A conversion skill must teach analysis of existing .sc designs and optional JSON exports, preserving original files and distinguishing observed model data from inferred modeling intent. Actual runtime conversion acceptance belongs to #5.
 
 - A local workspace is configured explicitly with FORGE_WORKSPACE_ROOT; no repository or user home directory is inferred.
-- Workspace reads are bounded to UTF-8 .py, .sc and .json files below that root and must not follow symlinks or traversal paths.
-- MCP source editing writes only .py files. Existing source replacement requires the exact SHA-256 returned by workspace_read. Native .sc and JSON inputs are read-only through the editor.
+- Workspace discovery is bounded to model source/native/JSON/metadata/docs below the target. Text reads allow UTF-8 .py, .json, .yml/.yaml and .md; native .sc stays opaque and all paths reject symlinks/traversal.
+- MCP source editing writes only .py files. Existing source replacement requires the exact SHA-256 returned by workspace_read. Native .sc, JSON, metadata and docs are read-only through the editor.
 - The supported HTTP bootstrap transport exposes no workspace writes; writable remote work requires authentication and per-client isolation first.
 
 - forge_compile accepts only an existing workspace .py source, validates the configured Forge release, and writes command JSON only below build/.
