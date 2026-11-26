@@ -47,3 +47,7 @@
 - Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The model root must be one existing directory strictly inside the configured CAD library.
 - The configured model root is authoritative. AI workflows must not search the surrounding catalog for a target, choose among similarly named owners, or switch owners implicitly.
 - All workspace reads/writes, Forge compilation outputs and SolidCraft runtime outputs remain bounded to the configured model root. `--workspace` remains only for explicit standalone/non-catalog work.
+
+- Catalog-backed assemblies/subassemblies may read exact dependency owners elsewhere in the same CAD library through read-only dependency tools; no dependency tool may write outside the configured target owner.
+- Dependency access requires an exact owner/path and may not provide fuzzy catalog search or implicit target selection.
+- Forge compilation for catalog-bound sessions adds the configured CAD-library root to the Python import path so existing `from models...` component imports resolve without making dependency owners writable.
