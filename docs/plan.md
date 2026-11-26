@@ -54,9 +54,7 @@ Windows VS Code + Conda guide uses the same three-checkout setup.
 
 ## Open issue assignment
 
-| Issue | Lane/owner | Status | Next action |
-| --- | --- | --- | --- |
-| #31 | dev/docs | now | Integrate this plan update, then open qualified dev -> main promotion |
+No unfinished implementation work is assigned before the next checkpoint.
 
 ## Recently completed
 
@@ -77,5 +75,6 @@ Windows VS Code + Conda guide uses the same three-checkout setup.
 
 ## Next checkpoint
 
-Promote the qualified dev baseline to `main`, then decide the first
-version/tag/release packaging from that stable baseline. Do not add a Docker distribution merely to publish the MCP.
+Open a clean qualified `dev -> main` promotion with no source changes. After
+that stable promotion, decide the first version/tag/release packaging from the
+new `main` baseline. Do not add a Docker distribution merely to publish the MCP.
