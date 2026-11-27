@@ -7,6 +7,18 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+### Added
+
+- Add authenticated live SolidCraft GUI control for trusted local stdio
+  workbenches: create a new active design, compile/apply Forge source, execute
+  native SolidCraft engine commands, inspect the active document and return a
+  current-camera model render through MCP.
+- Add the `solidcraft-control` skill and teach `forge-modeling` to use the
+  live GUI path for interactive iteration while retaining headless evidence.
+- Add optional local `project.yml` workbench configuration plus bounded
+  `build/session.jsonl` action/evidence logging with render/replay hashes.
+
+
 ## [0.0.2] - 2026-11-27
 
 ### Changed
