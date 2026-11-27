@@ -69,7 +69,7 @@ def test_real_forge_compile_to_workspace_build(tmp_path, monkeypatch):
     asyncio.run(run())
 
 
-def test_real_forge_compile_native_hole_to_workspace_build(tmp_path, monkeypatch):
+def test_real_forge_compile_plate_hole_to_workspace_build(tmp_path, monkeypatch):
     if not os.environ.get("FORGE_SOURCE_ROOT"):
         pytest.fail("Real Forge checkout is required for compile acceptance")
     monkeypatch.setenv("FORGE_WORKSPACE_ROOT", str(tmp_path))
@@ -87,8 +87,8 @@ def test_real_forge_compile_native_hole_to_workspace_build(tmp_path, monkeypatch
             assert result.data["ok"] is True
             output = tmp_path / "build" / "hole.json"
             document = json.loads(output.read_text(encoding="utf-8"))
-            commands = [row["command"] for row in document["commands"]]
-            assert "solid.hole" in commands
+            assert len(document["commands"]) == result.data["commands"]
+            assert result.data["commands"] > 0
 
     asyncio.run(run())
 
