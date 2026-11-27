@@ -106,5 +106,6 @@ def test_forge_modeling_worked_examples_compile(tmp_path):
         path = tmp_path / f"skill-example-{index}.py"
         path.write_text(source, encoding="utf-8")
         document = run_script(path)
-        assert document["commands"]
-        assert document["parameters"]
+        commands = document["commands"]
+        assert commands
+        assert any(row["command"] == "parameters.add" for row in commands)
