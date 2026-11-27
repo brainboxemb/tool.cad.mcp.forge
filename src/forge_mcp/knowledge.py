@@ -32,8 +32,12 @@ def source_root() -> Path:
         installed = metadata.version("scpf")
     except metadata.PackageNotFoundError as exc:
         raise KnowledgeError("Install scpf from the supported checkout's cadlib directory") from exc
-    if installed != FORGE_VERSION or _git(root, "rev-parse", "HEAD") != FORGE_COMMIT:
-        raise KnowledgeError(f"Forge knowledge requires scpf {FORGE_VERSION} at {FORGE_COMMIT}")
+    head = _git(root, "rev-parse", "HEAD")
+    tagged = _git(root, "rev-list", "-n", "1", FORGE_REF)
+    if installed != FORGE_VERSION or head != tagged:
+        raise KnowledgeError(
+            f"Forge knowledge requires scpf {FORGE_VERSION} at tag {FORGE_REF}"
+        )
     if _git(root, "status", "--porcelain", "--untracked-files=no"):
         raise KnowledgeError("Forge source checkout has tracked modifications")
     return root
