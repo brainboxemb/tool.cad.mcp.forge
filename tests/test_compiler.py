@@ -37,7 +37,7 @@ def test_real_forge_compile_to_workspace_build(tmp_path, monkeypatch):
             )
             assert not result.is_error
             assert result.data["ok"] is True
-            assert result.data["forge_version"] == "0.19.0"
+            assert result.data["forge_version"] == "0.25.0"
             assert result.data["commands"] > 0
             output = tmp_path / "build" / "solidcraft.json"
             assert output.is_file()
