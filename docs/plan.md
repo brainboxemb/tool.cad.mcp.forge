@@ -93,8 +93,8 @@ edits.
 | #95 | MCP/Forge docs | after acceptance | Align SolidCraft command knowledge with the qualified 0.50.0 runtime without silently relabeling 0.49 docs |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
-| #41 | MCP | effectively complete | Confirm the accepted explicit workspace/toolchain contract covers the requested behavior, then close |
 | #42 | external workspace owner | move out | Track workspace-template work in its owning repository rather than this MCP repository |
+| #106 | MCP/docs | active | Reconcile the published v0.0.8 baseline, then resume Windows live acceptance |
 
 ## Recently completed
 
