@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.5` from stable
-`main` commit `229953cf16e3a83bf5c6e3791bb4ff15ae31ad07`.
+The qualified local Forge MCP baseline is released as `v0.0.6` from stable
+`main` commit `d32e077ad4d9b6f981a44d9df69a7450ea5531dd`.
 
 The accepted stack is:
 
@@ -61,15 +61,19 @@ Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
 sensitive PRs use at most one released CAD runtime container. Ordinary
 `main` pushes run fast CI only. Complete released-stack acceptance belongs to
 runtime-sensitive PRs, explicit manual `full=true` diagnosis and the exact
-`/release` transaction, never to every merged main SHA. `/merge` dispatches one\nexplicit fast `ci.yml` run with `full=false` after integration because its\nActions-token API merge does not trigger a push workflow. That fast run exists\nonly to create the exact `main` CI record required by release.
+`/release` transaction, never to every merged main SHA. `/merge` dispatches one
+explicit fast `ci.yml` run with `full=false` after integration because its
+Actions-token API merge does not trigger a push workflow. That fast run exists
+only to create the exact `main` CI record required by release.
 
 ## Active workstreams
 
 ### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.5 is published and consumed by the template/concrete workspace. Real
-Windows Codex acceptance proved `environment` and `workspace_status`, then exposed
-per-call Git validation in `skill_reference`; issue #91 is the current blocker.
+MCP v0.0.6 is published and consumed by the template/concrete workspace. Real
+Windows Codex acceptance proved the status and knowledge paths, then exposed
+that `forge-modeling` did not yet teach a fresh agent how to start a new
+`scpf/model.py`; issue #96 is the current blocker before resuming the live demo.
 
 ### WS2 — Forge compatibility evolution
 
@@ -82,7 +86,7 @@ edits.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #91 | MCP | now | Remove per-call Forge Git validation from knowledge/reference and compile calls |
+| #96 | MCP | now | Make `forge-modeling` a real new-model skill with the minimal `scpf/model.py` contract |\n| #95 | MCP/Forge docs | next | Align SolidCraft command knowledge with the qualified 0.50.0 runtime |\n| #91 | MCP | complete | Per-call Forge Git validation removed from knowledge/reference and compile calls |
 | #88 | MCP CI | complete | Version-only release metadata PRs skip released-stack acceptance |
 | #84 | MCP | complete | Initial MCP status probes are subprocess-free and read-only tools are annotated |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
@@ -105,9 +109,9 @@ edits.
 
 ## Next checkpoint
 
-Publish the #91 knowledge/compile latency fix as the next MCP patch, update the
-workspace pins, then resume the already-started Windows 60 x 20 x 4 mm /
-diameter-8 live SolidCraft demo.
+Publish the #96 new-model skill improvement as the next MCP patch, update the
+workspace skill router/pins, then resume the already-started Windows 60 x 20 x
+4 mm / diameter-8 live SolidCraft demo.
 
 After that checkpoint, continue broad MCP product work from the current issue
 order without reintroducing a permanent promotion lane or always-expensive PR

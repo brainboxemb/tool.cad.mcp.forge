@@ -1,12 +1,14 @@
 import asyncio
 import os
 import json
+import re
 
 from fastmcp import Client
 import pytest
 
-from forge_mcp import knowledge
+from forge_mcp import knowledge, skills
 from forge_mcp.server import mcp
+from scpf import run_script
 
 
 def test_skill_entrypoints_without_forge(monkeypatch):
@@ -22,6 +24,17 @@ def test_skill_entrypoints_without_forge(monkeypatch):
             for name in ("forge-modeling", "solidcraft-to-forge", "solidcraft-control"):
                 result = await client.call_tool("skill_reference", {"skill": name, "file": "SKILL.md"})
                 assert result.data["content"].startswith("---")
+            modeling = await client.call_tool(
+                "skill_reference", {"skill": "forge-modeling", "file": "SKILL.md"}
+            )
+            content = modeling.data["content"]
+            assert "Starting a new `scpf/model.py`" in content
+            assert "class Plate:" in content
+            assert "from scpf import Anchor, Box" in content
+            assert "def build(self):" in content
+            assert "Plate()" in content
+            assert "lower-case numeric class fields" in content
+            assert "solidcraft-control" in content
             with pytest.raises(Exception, match="FORGE_SOURCE_ROOT"):
                 await client.call_tool("skill_reference", {"skill": "forge-modeling", "file": "references/index.json"})
     asyncio.run(run())
@@ -82,3 +95,17 @@ def test_real_skill_references_do_not_run_git(monkeypatch):
             assert "Placement" in second.data["content"]
 
     asyncio.run(run())
+
+
+def test_forge_modeling_worked_examples_compile(tmp_path):
+    content = skills.skill_reference("forge-modeling", "SKILL.md")["content"]
+    examples = re.findall(r"```python\n(.*?)```", content, flags=re.DOTALL)
+    assert len(examples) >= 2
+
+    for index, source in enumerate(examples[:2], start=1):
+        path = tmp_path / f"skill-example-{index}.py"
+        path.write_text(source, encoding="utf-8")
+        document = run_script(path)
+        commands = document["commands"]
+        assert commands
+        assert any(row["command"] == "parameters.add" for row in commands)
