@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.6` from stable
-`main` commit `d32e077ad4d9b6f981a44d9df69a7450ea5531dd`.
+The qualified local Forge MCP baseline is released as `v0.0.7` from stable
+`main` commit `57c9e0de05d27d895292a40dbbda3b9d270d7ea1`.
 
 The accepted stack is:
 
@@ -70,10 +70,12 @@ only to create the exact `main` CI record required by release.
 
 ### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.6 is published and consumed by the template/concrete workspace. Real
-Windows Codex acceptance proved the status and knowledge paths, then exposed
-that `forge-modeling` did not yet teach a fresh agent how to start a new
-`scpf/model.py`; issue #96 is the current blocker before resuming the live demo.
+MCP v0.0.7 is published and consumed by the template/concrete workspace.
+Real Windows Codex acceptance has now proven MCP discovery, fast status,
+release-matched knowledge access and the generated workbench skill router.
+`forge-modeling` now teaches and CI-compiles the minimal `scpf/model.py`
+contract. The current gate is to resume the 60 × 20 × 4 mm / Ø8 live
+SolidCraft apply/inspect/mutate/view/render demo.
 
 ### WS2 — Forge compatibility evolution
 
@@ -86,9 +88,7 @@ edits.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #96 | MCP | now | Make `forge-modeling` a real new-model skill with the minimal `scpf/model.py` contract |\n| #95 | MCP/Forge docs | next | Align SolidCraft command knowledge with the qualified 0.50.0 runtime |\n| #91 | MCP | complete | Per-call Forge Git validation removed from knowledge/reference and compile calls |
-| #88 | MCP CI | complete | Version-only release metadata PRs skip released-stack acceptance |
-| #84 | MCP | complete | Initial MCP status probes are subprocess-free and read-only tools are annotated |
+| #95 | MCP/Forge docs | after acceptance | Align SolidCraft command knowledge with the qualified 0.50.0 runtime without silently relabeling 0.49 docs |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
 | #41 | MCP | effectively complete | Confirm the accepted explicit workspace/toolchain contract covers the requested behavior, then close |
@@ -96,6 +96,14 @@ edits.
 
 ## Recently completed
 
+- #96 made `forge-modeling` the real new-model skill, including executable
+  `scpf/model.py` examples compiled against Forge/SCPF v0.25.0 in package CI.
+- #91 removed per-call Forge Git validation from knowledge/reference and compile
+  calls; exact checkout validation remains in the explicit doctor gate.
+- #88 made version-only release metadata PRs fast while preserving full
+  released-stack acceptance in the exact release transaction.
+- #84 made initial MCP status probes subprocess-free and advertised read-only
+  tool annotations.
 - #49 qualified Forge/SCPF v0.25.0 and published MCP v0.0.2.
 - #56 added bounded live SolidCraft GUI control and was released as MCP v0.0.3.
 - #62 qualified SolidCraft 0.50.0 / CAD runtime v0.3.8.
@@ -105,13 +113,15 @@ edits.
   heredocs and batched runtime plus conversion acceptance into one SolidCraft
   container/venv setup.
 - #77 published MCP v0.0.4 from qualified stable `main`.
-- #80 moved the stable full released-stack gate from every `main` push into\n  the exact repository-local `/release` transaction and consolidated CI\n  support under the repository `modules/ci` Python module.
+- #80 moved the stable full released-stack gate from every `main` push into
+  the exact repository-local `/release` transaction and consolidated CI
+  support under the repository `modules/ci` Python module.
 
 ## Next checkpoint
 
-Publish the #96 new-model skill improvement as the next MCP patch, update the
-workspace skill router/pins, then resume the already-started Windows 60 x 20 x
-4 mm / diameter-8 live SolidCraft demo.
+Resume the already-started Windows 60 × 20 × 4 mm / Ø8 live SolidCraft demo
+against workspace-pinned MCP v0.0.7. Treat #95 as a separate documentation
+alignment task unless the live engine exposes an actual 0.50 command mismatch.
 
 After that checkpoint, continue broad MCP product work from the current issue
 order without reintroducing a permanent promotion lane or always-expensive PR
