@@ -11,52 +11,40 @@ from cad_model_branch_cleanup.policy import (
 
 CONFIG = CleanupConfig(
     stable="main",
-    development="dev",
     temporary_prefixes=("issue/", "fix/", "feature/", "docs/", "chore/", "release/"),
 )
 
 
 class PolicyTests(unittest.TestCase):
-    def test_permanent_branches_are_never_temporary(self):
+    def test_main_is_the_only_permanent_branch(self):
         self.assertFalse(is_temporary("main", CONFIG))
-        self.assertFalse(is_temporary("dev", CONFIG))
 
-    def test_experimental_cleanup(self):
+    def test_old_permanent_lane_names_are_not_special(self):
+        self.assertFalse(is_temporary("dev", CONFIG))
         self.assertFalse(is_temporary("exp", CONFIG))
-        self.assertTrue(eligible_post_merge(head="feature/73-work", base="exp", same_repository=True, merged=True, config=CONFIG))
-        self.assertFalse(eligible_post_merge(head="release/v1", base="exp", same_repository=True, merged=True, config=CONFIG))
-        self.assertFalse(eligible_post_merge(head="exp", base="dev", same_repository=True, merged=True, config=CONFIG))
 
     def test_allowed_prefix_is_temporary(self):
         self.assertTrue(is_temporary("issue/11-cleanup", CONFIG))
 
-    def test_merged_same_repo_feature_to_dev_is_eligible(self):
+    def test_all_temporary_branches_target_main(self):
+        self.assertEqual(merge_target("issue/11-work", CONFIG), "main")
+        self.assertEqual(merge_target("release/v1.2.3", CONFIG), "main")
+
+    def test_merged_same_repo_temporary_branch_to_main_is_eligible(self):
         self.assertTrue(
             eligible_post_merge(
                 head="fix/7-cleanup",
-                base="dev",
-                same_repository=True,
-                merged=True,
-                config=CONFIG,
-            )
-        )
-
-    def test_release_branch_targets_stable(self):
-        self.assertTrue(is_temporary("release/v1.2.3", CONFIG))
-        self.assertEqual(merge_target("release/v1.2.3", CONFIG), "main")
-        self.assertEqual(merge_target("issue/11-work", CONFIG), "dev")
-        self.assertTrue(
-            eligible_post_merge(
-                head="release/v1.2.3",
                 base="main",
                 same_repository=True,
                 merged=True,
                 config=CONFIG,
             )
         )
+
+    def test_old_dev_target_is_not_eligible(self):
         self.assertFalse(
             eligible_post_merge(
-                head="release/v1.2.3",
+                head="issue/11-work",
                 base="dev",
                 same_repository=True,
                 merged=True,

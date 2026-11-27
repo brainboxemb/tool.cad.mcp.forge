@@ -4,13 +4,10 @@ class MergePolicyError(RuntimeError):
     """Branch integration violates project policy."""
 
 
+_TEMPORARY_PREFIXES = ("issue/", "fix/", "feature/", "docs/", "chore/", "release/")
+
+
 def merge_method(*, head: str, base: str) -> str:
-    if (head, base) in {("dev", "exp"), ("exp", "dev")}:
-        return "merge"
-    if base in {"dev", "exp"} and head.startswith(("issue/", "fix/", "feature/", "docs/", "chore/")):
+    if base == "main" and head.startswith(_TEMPORARY_PREFIXES):
         return "squash"
-    if base == "main" and head.startswith("release/"):
-        return "squash"
-    if (head, base) in {("dev", "main"), ("main", "dev")}:
-        return "merge"
     raise MergePolicyError(f"unsupported branch integration: {head} -> {base}")

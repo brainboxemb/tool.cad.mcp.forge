@@ -12,16 +12,13 @@ def is_temporary(branch: str, config: CleanupConfig) -> bool:
 
 
 def merge_target(branch: str, config: CleanupConfig) -> str:
-    """Return the primary integration target (release branches target stable)."""
+    """Return the only permanent integration target."""
 
-    if branch.startswith("release/"):
-        return config.stable
-    return config.development
+    return config.stable
 
 
 def merge_targets(branch: str, config: CleanupConfig) -> tuple[str, ...]:
-    primary = merge_target(branch, config)
-    return (primary,) if branch.startswith("release/") else (primary, "exp")
+    return (merge_target(branch, config),)
 
 
 def eligible_post_merge(
