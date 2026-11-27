@@ -4,10 +4,10 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is stable on `main` at
-`a51814529763b176cb963f84b10d72e1838cb8bb`. Stable main qualification run
-`45790390980` passed the package, real SolidCraft runtime, existing-design
-conversion and repository-policy gates.
+The qualified local Forge MCP baseline is released as `v0.0.1` from stable
+`main` commit `5db8d61e292683a6e5aa1f6758a201663bb447fc`. Stable main
+qualification run `46029948156` passed the package, real SolidCraft runtime,
+existing-design conversion and repository-policy gates.
 
 The stable baseline includes:
 
@@ -53,18 +53,18 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ## Active workstreams
 
-### WS1 — governed first MCP release
+### WS1 — Forge v0.25.0 compatibility
 
-Issue #45 replaces the initial #43 adapter with repository-local release
-ownership. `modules/release` owns request parsing, package/changelog
-validation, stable-main/CI gates, annotated tag creation and GitHub Release
-publication. The thin workflow only supplies GitHub event context and token.
+Issue #49 moves the version-matched MCP baseline to the same Forge release used
+by the active CAD development catalog. CI and local knowledge use the immutable
+`v0.25.0` tag rather than embedding its commit SHA. Existing runtime,
+conversion and repository-policy acceptance remain mandatory.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #45 | MCP `dev` -> `main` | now | Integrate the local release capability, promote it to stable `main`, then publish `v0.0.1` |
+| #49 | MCP `dev` | now | Qualify Forge `v0.25.0`, promote the accepted checkpoint, then publish MCP `v0.0.2` |
 
 ## Recently completed
 
@@ -86,12 +86,13 @@ publication. The thin workflow only supplies GitHub event context and token.
 - #35 qualified stable promotion of the target/dependency baseline.
 - #43 initial governed release adapter; superseded by #45 before stable promotion
   because publication ownership must remain repository-local.
+- #45 repository-local release capability under `modules/release`.
+- #48 published and verified the first MCP release, `v0.0.1`.
 
 ## Next checkpoint
 
-Publish `v0.0.1` through the governed release workflow from the exact
-qualified `main` head. After that, update the supported Forge baseline in a
-separate compatibility change; do not combine the Forge 0.24 adoption with the
-first MCP release transaction.
+Complete #49 against Forge `v0.25.0`, then publish MCP `v0.0.2` through
+the repository-local release workflow. After that, update the workspace
+dependency contract to MCP `v0.0.2` plus Forge `v0.25.0` release tags.
 
 Do not add a Docker distribution merely to publish the MCP.
