@@ -28,13 +28,23 @@ Successful output must be a non-empty JSON object with a commands array; the too
 
 ## SolidCraft runtime
 
-The first runtime adapter deliberately exposes only three engine-owned operations: replay generated build command JSON, evaluate an existing native .sc, and render a deterministic PNG. It validates solidcraft-cli 0.49.0 before every operation and uses fixed subprocess argument lists, timeouts, bounded diagnostics and build-only outputs. There is no generic command JSON executor in the MCP interface.
+Headless/file runtime operations remain replay of generated build command JSON, evaluation/structure inspection of existing native .sc and deterministic PNG rendering. They validate SolidCraft 0.49.0 and keep generated outputs below the configured workspace build tree.
+
+Interactive local work additionally uses the running SolidCraft GUI through Forge v0.25.0's existing authenticated `scpf.live` client. MCP does not duplicate the socket/token protocol and does not proxy SolidCraft's own MCP server. The live adapter is enabled only for trusted local stdio and exposes new-design, Forge-apply, one native engine command, active-document inspection and current-camera model rendering. The native engine itself performs strict command/parameter validation; MCP adds workspace/evidence bounds and result-size limits, never an OS-shell execution surface.
 
 solidcraft_replay accepts only generated JSON below build/ and creates build/*.sc. solidcraft_evaluate may read any workspace .sc without treating the native format as text; it writes build/*.json and returns a compact summary of available sections, bodies, parameters, timeline, sketches and component/occurrence rows when present. Full measurements are optional and size-bounded. solidcraft_snapshot reads any workspace .sc, writes build/*.png and returns the validated PNG as MCP image content.
 
-Runtime execution is enabled only for local stdio. CI creates command JSON with the already-qualified Forge compiler on the host, then runs the MCP runtime acceptance inside the existing ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 image. This proves the same SolidCraft 0.49.0 runtime used by Forge/CAD-CI without introducing a new MCP runtime image.
+Runtime execution is enabled only for local stdio. CI creates command JSON with the already-qualified Forge compiler on the host, then runs the headless MCP runtime acceptance inside the existing ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 image. Live GUI control is separately unit/contract tested because CI has no desktop SolidCraft session. The operator acceptance gate exercises the real running GUI on Windows.
 
 The fixed solidcraft_components inspection is the first explicit native-structure query. It internally generates exactly one component.list command with boolean compact/bodies options, runs it read-only against the supplied .sc without --save, removes the temporary command file, persists only the result JSON below build/ and returns that result. This does not create a generic command execution surface.
+
+## Live workbench project and evidence
+
+A standalone workspace may include `project.yml`. It is local modeling-session configuration, not catalog metadata and not CI configuration. The initial schema defines the maintained Forge source, live SolidCraft connection selector and bounded evidence paths. Defaults keep the file optional.
+
+Each successful or failed live action appends one bounded JSON object to the configured JSONL session log when evidence logging is enabled. Input/result payloads are size-limited; render evidence records path/hash while image bytes stay in the PNG artifact/MCP image response. SolidCraft control tokens stay inside `scpf.live` and are never logged.
+
+`forge_live` compiles the configured Forge source to `build/live/solidcraft.json`, optionally creates a new active GUI design, sends the replay document through `scpf.live.send_document`, and persists the concrete replay log below `build/live/`. `solidcraft_live_inspect` uses the control protocol's `document.inspect`; `solidcraft_live_render` uses `ui.render` so the returned image reflects the active GUI camera/view rather than a reopened saved file.
 
 ## Existing-design analysis
 
