@@ -7,6 +7,24 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-27
+
+### Changed
+
+- Make the MCP `environment` status call subprocess-free so initial client
+  readiness checks no longer run Git validation or `solidcraft-cli --version`.
+- Keep exact Forge checkout and SolidCraft version qualification in the
+  explicit operator `doctor` gate.
+- Advertise genuinely read-only status, knowledge and workspace inspection
+  tools with MCP `readOnlyHint` metadata.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.4] - 2026-11-27
 
 ### Changed
