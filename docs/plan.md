@@ -66,7 +66,7 @@ live evidence.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| next live-control issue | MCP `dev` | next | Add bounded live SolidCraft GUI tools, session evidence logging and a SolidCraft-control skill |
+| #56 | MCP `dev` | now | Add bounded live SolidCraft GUI tools, session evidence logging and the SolidCraft-control skill |
 
 ## Recently completed
 
