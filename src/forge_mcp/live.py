@@ -7,7 +7,11 @@ from pathlib import Path
 from typing import Any
 
 import yaml
-from scpf import live as scpf_live
+
+try:
+    from scpf import live as scpf_live
+except ModuleNotFoundError:
+    scpf_live = None
 
 from . import compiler, workspace
 
@@ -33,6 +37,10 @@ def _require_execution() -> None:
     if not _execution_enabled:
         raise LiveControlError(
             "Live SolidCraft control is disabled for this server transport"
+        )
+    if scpf_live is None:
+        raise LiveControlError(
+            "Live SolidCraft control requires the qualified Forge/SCPF package"
         )
 
 
