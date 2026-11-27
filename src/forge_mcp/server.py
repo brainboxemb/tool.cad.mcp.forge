@@ -7,6 +7,7 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
+from mcp.types import ToolAnnotations
 from . import analysis, compiler, diagnostics, live, runtime, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners through read-only catalog tools, but never fuzzy-search, switch, or edit another owner implicitly.")
@@ -16,45 +17,52 @@ _DIAGNOSTIC_PNG = base64.b64decode(
     "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAGUlEQVR4nGM0SlnAQApgIkn1qIZRDUNKAwDmwwFWY/Xh+wAAAABJRU5ErkJggg=="
 )
 
-@mcp.tool
+_READ_ONLY = ToolAnnotations(
+    readOnlyHint=True,
+    destructiveHint=False,
+    idempotentHint=True,
+    openWorldHint=False,
+)
+
+@mcp.tool(annotations=_READ_ONLY)
 def environment() -> dict:
-    """Report protocol and local CAD readiness without executing model work."""
-    readiness = diagnostics.doctor(include_paths=False)
+    """Report fast path-free MCP configuration status without subprocess probes."""
+    readiness = diagnostics.environment_status()
     return {
         "protocol": "mcp",
         "stage": "local-qualified",
-        "cad_ready": readiness["ready"],
+        "cad_ready": readiness["configured"],
         "fastmcp_version": version("fastmcp"),
         "transports": ["stdio", "streamable-http"],
         "readiness": readiness,
     }
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def diagnostic_image() -> Image:
     """Return a tiny fixed PNG to check client image support, not a CAD render."""
     return Image(data=_DIAGNOSTIC_PNG, format="png")
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def skill_list() -> dict:
     """Discover task-oriented skills. Read the relevant SKILL.md before authoring or converting CAD."""
     return skills.skill_list()
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
     """Read a skill entrypoint or a named reference from its references/index.json."""
     return skills.skill_reference(skill, file)
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def workspace_status() -> dict:
     """Describe the configured local model workspace and edit policy."""
     return workspace.status()
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def workspace_list(path: str = ".", limit: int = 200) -> dict:
     """List readable model/source files below one workspace directory without following symlinks."""
     return workspace.list_files(path, limit)
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def workspace_read(path: str) -> dict:
     """Read one UTF-8 Python or JSON file with a content hash; native .sc is inspected via SolidCraft."""
     return workspace.read_file(path)
@@ -64,17 +72,17 @@ def workspace_write(path: str, content: str, expected_sha256: str | None = None)
     """Create Python Forge source or replace it using the hash returned by workspace_read."""
     return workspace.write_source(path, content, expected_sha256)
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def catalog_dependency_list(owner: str, limit: int = 200) -> dict:
     """List one exact model owner elsewhere in the configured CAD library, read-only."""
     return workspace.catalog_dependency_list(owner, limit)
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def catalog_dependency_read(owner: str, path: str) -> dict:
     """Read one exact text file from one explicitly named dependency owner, read-only."""
     return workspace.catalog_dependency_read(owner, path)
 
-@mcp.tool
+@mcp.tool(annotations=_READ_ONLY)
 def model_input_summary(path: str) -> dict:
     """Classify .sc/.json/.py model input compactly before deciding how to inspect it."""
     return analysis.input_summary(path)

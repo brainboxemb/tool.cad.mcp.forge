@@ -130,6 +130,7 @@ def test_real_stdio_subprocess_reports_path_free_target_identity(tmp_path):
             result = await client.call_tool("environment", {})
             assert not result.is_error
             assert result.data["cad_ready"] is True
+            assert result.data["readiness"]["solidcraft"]["configured"] is True
             readiness = result.data["readiness"]["workspace"]
             assert readiness["catalog_bound"] is True
             assert readiness["model_id"] == "sample-assembly"
@@ -143,3 +144,39 @@ def test_real_stdio_subprocess_reports_path_free_target_identity(tmp_path):
             assert "cad_library_root" not in status.data
 
     asyncio.run(run())
+
+
+def test_environment_status_does_not_run_runtime_or_git_probes(monkeypatch, tmp_path):
+    from forge_mcp import diagnostics, knowledge, runtime, workspace
+
+    standalone = tmp_path / "standalone"
+    standalone.mkdir()
+    monkeypatch.setenv("FORGE_WORKSPACE_ROOT", str(standalone))
+    monkeypatch.delenv("CAD_LIBRARY_ROOT", raising=False)
+    monkeypatch.delenv("CAD_MODEL_ROOT", raising=False)
+    monkeypatch.setattr(
+        knowledge,
+        "source_root",
+        lambda: pytest.fail("environment must not validate Forge Git checkout"),
+    )
+    monkeypatch.setattr(
+        runtime,
+        "detect_version",
+        lambda: pytest.fail("environment must not run solidcraft-cli --version"),
+    )
+    monkeypatch.setattr(
+        diagnostics.metadata,
+        "version",
+        lambda name: {
+            "fastmcp": "2.14.7",
+            "scpf": "0.25.0",
+        }[name],
+    )
+    runtime.set_cli_executable("solidcraft-cli")
+
+    report = diagnostics.environment_status()
+
+    assert report["configured"] is True
+    assert report["forge"]["installed_version"] == "0.25.0"
+    assert report["solidcraft"]["configured"] is True
+    assert report["workspace"]["catalog_bound"] is False

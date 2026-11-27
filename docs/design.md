@@ -60,7 +60,7 @@ The installed `forge-cad-mcp` command remains the single server entrypoint. It a
 
 The SolidCraft adapter stores one configured CLI executable instead of assuming PATH. `detect_version()` runs only `<cli> --version`; model/runtime methods still enforce the local-stdio execution gate and exact 0.50.0 version before CAD work.
 
-`doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.25.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
+`doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.25.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool is intentionally cheaper: it reports path-free configured versions and workspace identity without spawning Git or SolidCraft subprocesses. The operator doctor gate remains authoritative for exact runtime qualification. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
 
 No VS Code/Claude/Codex-specific adapter exists. Their configuration points to the same stdio executable with the same arguments.
 

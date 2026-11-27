@@ -64,3 +64,47 @@ def doctor(*, include_paths: bool = False) -> dict:
         for section in (result["forge"], result["solidcraft"], result["workspace"])
     )
     return result
+
+
+def environment_status() -> dict:
+    """Return fast path-free MCP configuration status without subprocess probes."""
+    try:
+        scpf_version = metadata.version("scpf")
+    except metadata.PackageNotFoundError:
+        scpf_version = None
+
+    try:
+        workspace_status = workspace.status(include_paths=False)
+        workspace_ready = True
+        workspace_error = None
+    except Exception as exc:
+        workspace_status = {}
+        workspace_ready = False
+        workspace_error = str(exc)
+
+    forge_ready = scpf_version == knowledge.FORGE_VERSION
+    solidcraft_configured = bool(runtime.cli_executable())
+    configured = forge_ready and solidcraft_configured and workspace_ready
+
+    result = {
+        "configured": configured,
+        "verification": "run forge-cad-mcp doctor for exact Forge checkout and SolidCraft version validation",
+        "fastmcp": {"version": metadata.version("fastmcp")},
+        "forge": {
+            "required_version": knowledge.FORGE_VERSION,
+            "required_ref": knowledge.FORGE_REF,
+            "installed_version": scpf_version,
+            "configured": forge_ready,
+        },
+        "solidcraft": {
+            "required_version": runtime.SOLIDCRAFT_VERSION,
+            "configured": solidcraft_configured,
+        },
+        "workspace": {
+            "ready": workspace_ready,
+            **workspace_status,
+        },
+    }
+    if workspace_error is not None:
+        result["workspace"]["error"] = workspace_error
+    return result

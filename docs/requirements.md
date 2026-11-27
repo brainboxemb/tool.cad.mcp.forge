@@ -42,7 +42,7 @@
 
 - Local startup accepts explicit --workspace, --forge-source and --solidcraft-cli arguments; existing environment variables remain fallback configuration.
 - forge-cad-mcp doctor validates workspace, exact Forge/SCPF 0.25.0 release and SolidCraft 0.50.0 version without executing a model and exits non-zero when the stack is not ready.
-- The MCP environment tool reports the same path-free readiness contract so a client can decide whether CAD work is available.
+- The MCP environment tool is a fast path-free configuration/status probe and must not run Git or SolidCraft subprocesses. Exact Forge checkout and SolidCraft version validation belongs to the explicit doctor gate.
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
 - A standalone workspace may contain optional `project.yml` local workbench configuration. Forge source defaults to `scpf/model.py`; live SolidCraft connection defaults to automatic localhost discovery; evidence logging defaults to `build/session.jsonl` and live model rendering to `build/live/model.png`. Configured source/evidence paths may not escape the workspace, and live evidence outputs must stay below `build/`.
