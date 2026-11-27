@@ -18,4 +18,4 @@ forge-cad-mcp = "forge_mcp.server:main"
 where = ["src"]
 
 [tool.setuptools.package-data]
-forge_mcp = ["skills/*/SKILL.md"]
+forge_mcp = ["skills/README.md", "skills/*/*.md"]

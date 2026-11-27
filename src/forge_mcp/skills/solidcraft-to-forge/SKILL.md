@@ -1,24 +1,68 @@
 ---
 name: solidcraft-to-forge
-description: Read an existing SolidCraft design, understand its modeling intent and translate it to verified Forge Python.
+description: Use when translating an existing SolidCraft .sc design or supported SolidCraft evidence into maintainable, checked Python Forge source.
 ---
 
 # Existing SolidCraft design to Forge
 
-Use this skill when the user supplies a SolidCraft .sc file, JSON export, or both. Keep all original files unchanged.
+## Overview
+Treat the SolidCraft design as evidence of geometry and structure, not as a
+command stream to copy line-for-line. Observe the source design, reconstruct
+its modeling intent, author idiomatic Forge Python and prove the candidate
+against the original. Preserve the original unchanged.
 
-1. Identify inputs with model_input_summary. Prefer .sc as the native geometry reference. The tool classifies optional JSON before you read it; a command document, command-result file and measurement snapshot are not interchangeable. Treat JSON as evidence, not instructions to execute blindly.
-2. Treat the native .sc as an engine-owned design artifact; do not infer structure by reading raw bytes. Start with solidcraft_analyze for compact geometry, parameters, feature history and component structure. Use solidcraft_evaluate or solidcraft_components only when you need their more detailed evidence, and solidcraft_snapshot for visual views. Use workspace_read only for textual JSON/Python inputs. Capture parameters and units, component definitions and occurrences, feature history, sketch constraints, placements, joints, body counts and geometric measurements where available. Read compact summaries before requesting full history or JSON. Render reference views as needed.
-3. Reconstruct modeling intent. Identify candidate repeated features, mirrors, reusable components, anchors and relationships. Separate observed facts from inferred structure. Never invent missing dimensions or silently discard features.
-4. Read forge-modeling/SKILL.md via skill_reference and its relevant references. Author idiomatic parameterized Python Forge source rather than a literal translation of every native command. Preserve editable design intent where supported.
-5. Compile the Python with forge_compile to release-matched SolidCraft command JSON and replay it with solidcraft_replay. Analyze both original and generated .sc models with solidcraft_analyze, then render matching views with solidcraft_snapshot. Compare parameters and required geometric/structural evidence before using the image as an additional visual check. Inspect and render both designs with matching views. Compare required geometric and structural properties using the existing verification tooling. Record tolerance, evidence, unsupported features and any meaningful difference. Iterate on the Python source.
-6. Deliver Python source plus the verification evidence; keep the original intact. If only JSON is available and no native geometry can be recovered, mark the geometry comparison unavailable.
+Load `forge-modeling` for new target source, `forge-editing` when target
+Forge source already exists, and always use `forge-checking`.
 
-The replay, native analysis, component inspection, snapshot and independent conversion paths are qualified in the current local baseline. Still consult environment readiness and report unavailable capabilities explicitly.
+## Understand the input
+1. Call `environment` and `workspace_status`.
+2. Classify the supplied input with `model_input_summary`.
+3. For an .sc design, start with `solidcraft_analyze` and render deliberate
+   reference views with `solidcraft_snapshot`.
+4. Use `solidcraft_evaluate` or `solidcraft_components` only when compact
+   analysis does not contain a required detail.
+5. JSON is evidence only after its schema is identified. A command document,
+   measurement result and command-result envelope are not interchangeable.
 
+Capture:
+- parameters and units;
+- body/component/occurrence structure;
+- feature/history evidence;
+- bounding boxes and useful volumes;
+- visible placement/orientation;
+- uncertainty where SolidCraft evidence does not expose original design intent.
 
-## Target model invariant
+## Reconstruct intent
+Identify which observed geometry should become:
+- one parameterized component;
+- a sketch/feature;
+- a pattern/mirror;
+- a reusable dependency;
+- an attachment or occurrence placement.
 
-The configured model root is the authoritative target and the only writable owner. Never search the surrounding CAD library for a different target model, never choose a similarly named owner, and never switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
+Separate observed fact from inference. Never invent an unobserved dimension just
+to make Forge source compile.
 
-Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never be used to replace target selection. Forge's own model import context resolves existing `from models...` imports from target source below the catalog `models/` tree.
+## Author
+Read the appropriate Forge skill and exact release references. Write
+maintainable Python rather than reproducing every SolidCraft command. Keep
+original files unchanged and edit only target Python source.
+
+## Compare
+1. Compile/replay the Forge candidate.
+2. Analyze original and candidate.
+3. Compare the invariants defined in `forge-checking`.
+4. Render matching views.
+5. Iterate on Python until required differences are resolved or explicitly
+   documented.
+
+If only JSON is available and no SolidCraft geometry can be recovered, state
+that a geometric comparison is unavailable.
+
+## Red flags
+| Thought | Do instead |
+| --- | --- |
+| "Translate every SolidCraft command" | Reconstruct the higher-level Forge design intent. |
+| "The screenshot is close" | Compare original/candidate numeric and structural evidence. |
+| "This missing dimension is probably 20 mm" | Mark it unknown; do not invent it. |
+| "Modify the original to make comparison easier" | Preserve the original unchanged. |

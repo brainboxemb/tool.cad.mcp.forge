@@ -9,7 +9,7 @@ from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
 from . import analysis, compiler, diagnostics, runtime, skills, workspace
 
-mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners through read-only catalog tools, but never fuzzy-search, switch, or edit another owner implicitly.")
+mcp = FastMCP("Forge CAD", instructions="Start CAD work with skill_list, then read the task skill and its reference.md through skill_reference. Use forge-checking alongside modeling, editing, assemblies, sheet metal and conversion work. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners read-only, but never fuzzy-search, switch, or edit another owner implicitly.")
 
 # Fixed transport diagnostic only; never evidence of a CAD render.
 _DIAGNOSTIC_PNG = base64.b64decode(
@@ -36,12 +36,12 @@ def diagnostic_image() -> Image:
 
 @mcp.tool
 def skill_list() -> dict:
-    """Discover task-oriented skills. Read the relevant SKILL.md before authoring or converting CAD."""
+    """Discover task-oriented operational skills, their local references and required MCP tools."""
     return skills.skill_list()
 
 @mcp.tool
 def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
-    """Read a skill entrypoint or a named reference from its references/index.json."""
+    """Read a packaged skill file or a release-matched Forge reference."""
     return skills.skill_reference(skill, file)
 
 @mcp.tool

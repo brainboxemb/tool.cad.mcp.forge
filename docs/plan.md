@@ -53,11 +53,19 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ## Active workstreams
 
-No implementation work is active after the stable target/dependency promotion.
+### WS1 — operational agent skills
+
+Issue #39 replaces the thin two-skill routing layer with operational task
+playbooks modeled on the SolidCraft Agent Skills approach. The MCP owns workflow
+skills; the validated Forge checkout remains the source for API semantics,
+examples and guides. The first set is modeling, editing, checking, assemblies,
+sheet metal and SolidCraft-to-Forge.
 
 ## Open issue assignment
 
-No unfinished implementation work is assigned.
+| Issue | Lane/owner | Status | Next action |
+| --- | --- | --- | --- |
+| #39 | dev | now | Verify packaged operational skills and release-matched references |
 
 ## Recently completed
 
@@ -80,5 +88,7 @@ No unfinished implementation work is assigned.
 
 ## Next checkpoint
 
-Decide the first version/tag/release packaging from the stable `main` baseline.
-Do not add a Docker distribution merely to publish the MCP.
+Finish #39 and verify that a fresh MCP client can discover a task skill, read
+its operational reference and use only real MCP tools/release-matched Forge
+references. Then decide the first version/tag/release packaging from the stable
+`main` baseline. Do not add a Docker distribution merely to publish the MCP.

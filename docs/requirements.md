@@ -54,3 +54,10 @@
 
 - Normal MCP `environment`/`workspace_status` responses expose only target identity (`model_id`, `model_relative`), not absolute catalog/model paths; local `doctor` may include paths for diagnosis.
 - Explicit CLI `--workspace` clears inherited catalog binding for that process, and explicit `--cad-library` + `--model-root` clears the standalone workspace fallback.
+
+- The MCP skill layer must contain operational task playbooks rather than only links to API documentation.
+- The initial task set is forge-modeling, forge-editing, forge-checking, forge-assemblies, forge-sheetmetal and solidcraft-to-forge.
+- forge-checking is a companion skill for build/edit/assembly/sheet-metal/conversion work and must require evidence beyond compiler/replay success.
+- Each skill must package SKILL.md and reference.md so workflow guidance remains available without FORGE_SOURCE_ROOT; exact Forge API/examples/guides remain release-matched through the validated checkout.
+- skill_list must declare the MCP tools used by each skill and CI must verify every declared tool exists.
+- Skill text must not claim unsupported runtime capabilities; known gaps such as general parameter-variant execution or dedicated sheet flat-pattern inspection must be stated explicitly.

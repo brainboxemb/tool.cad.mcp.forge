@@ -10,7 +10,20 @@ Discover actual installed API and CLI contracts before implementing CAD adapters
 
 The initial supported Forge release is v0.19.0, commit ce9cd4439efe51edc360b7bfffb77b950e218d32. Install scpf from that checkout's cadlib directory and configure FORGE_SOURCE_ROOT to the checkout. Knowledge validates the installed distribution version and local checkout commit and rejects tracked checkout modifications. It does not fetch anything at request time. The install procedure and CI use the same checkout; a matching version alone is not a cryptographic proof of installed wheel provenance.
 
-Skills are the primary knowledge interface, following the SolidCraft skill-reference pattern. Expose only skill_list and skill_reference for knowledge; no separate search tool family. Each packaged SKILL.md teaches a task workflow, followed by explicit references. The initial MCP-owned workflow skills are forge-modeling and solidcraft-to-forge; Forge remains owner of API semantics, guides, cheatsheet and examples. A later Forge-side skill move can be coordinated when reusable ownership is established. References are resolved from an explicit allowlist or constrained symbol/example/guide paths in the validated checkout. Public signatures/docstrings come from installed scpf. The reference index is discoverable, and no arbitrary filesystem access or generated Python execution is provided. The conversion skill describes the intended workflow; actual native model analysis and comparison are gated by #5.
+Skills are the primary knowledge interface, following the SolidCraft Agent Skills
+pattern rather than exposing a public search-tool family. The MCP owns the
+operational workflow: modeling, editing, checking, assemblies, sheet metal and
+SolidCraft-to-Forge. Each packaged skill has a SKILL.md plus a local
+reference.md that teaches tool order, verification discipline, efficiency and
+red flags. forge-checking is a companion skill used by the other CAD workflows.
+
+Forge remains the owner of Python API semantics, guides, cheatsheet and example
+source. Exact signatures/examples/guides are resolved only from the validated
+release checkout; public signatures/docstrings come from installed scpf. Local
+skill files remain readable even when Forge is not configured, while
+release-matched references fail explicitly without the validated checkout.
+skill_list declares the MCP tools each skill expects and CI verifies those
+declared tools exist.
 
 Docker packaging, if useful for an operator hosting MCP or reproducing runtime dependencies, is a later optional deployment decision. Local stdio usage needs no Docker packaging of the MCP itself.
 
