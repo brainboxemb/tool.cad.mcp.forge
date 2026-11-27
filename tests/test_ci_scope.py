@@ -19,8 +19,10 @@ def test_runtime_package_and_acceptance_changes_require_released_stack():
         "src/forge_mcp/skills/forge-modeling/SKILL.md",
         "pyproject.toml",
         ".github/workflows/ci.yml",
+        ".github/workflows/release.yml",
         "scripts/ci_scope.py",
         "scripts/prepare_acceptance.py",
+        "scripts/run_released_stack_acceptance.sh",
         "tests/fixtures/acceptance_box.py",
         "tests/test_compiler.py",
         "tests/test_runtime.py",
@@ -29,8 +31,8 @@ def test_runtime_package_and_acceptance_changes_require_released_stack():
         assert runtime_required([path]), path
 
 
-def test_main_push_and_manual_runs_always_require_released_stack():
-    assert runtime_for_event("push")
+def test_main_push_skips_released_stack_but_manual_ci_is_full():
+    assert not runtime_for_event("push")
     assert runtime_for_event("workflow_dispatch")
 
 
