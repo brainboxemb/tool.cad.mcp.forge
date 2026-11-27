@@ -92,18 +92,14 @@ Documentation and repository-policy-only pull requests do not start SolidCraft.
 Ordinary pushes to stable `main` run the fast central CI only; they never
 start SolidCraft merely because a PR was merged. The `/merge` policy does not
 dispatch central CI after merge; the normal `push: main` trigger owns that
-post-merge check. A manual CI dispatch is fast by default and runs full
-released-stack acceptance only when its explicit `full=true` input is selected. Normal release
+post-merge check. A manual CI dispatch is fast by default and runs full\nreleased-stack acceptance only when its explicit `full=true` input is selected.\nNormal release
 publication owns the stable full-stack gate: the `/release` workflow first
 validates that its local checkout is the exact requested current `main` SHA
 with green central CI, then runs the complete released-stack acceptance before
 tagging or publishing.
 
 Released-stack fixture construction is maintained in
-`scripts/prepare_acceptance.py` plus `tests/fixtures/acceptance_box.py`.
-`scripts/run_released_stack_acceptance.sh` is the single maintained runner
-used by runtime-sensitive PR CI, explicit manual full CI and the release
-workflow. Compatible runtime replay/render acceptance and existing-design
+`modules/ci` owns both CI scope classification and released-stack acceptance.\nThe maintained acceptance fixture lives under the same module. Runtime-sensitive\nPR CI calls the module directly, while `modules/release` imports the same Python\nacceptance function before publication. Compatible runtime replay/render acceptance and existing-design
 conversion acceptance run inside one
 `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one temporary Python
 environment.

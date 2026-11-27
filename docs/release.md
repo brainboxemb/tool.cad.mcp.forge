@@ -1,7 +1,7 @@
 # Release procedure
 
 Forge CAD MCP releases are published only from stable `main` through the
-repository-local release transaction.
+repository-local Python release module.
 
 ## Prepare the release
 
@@ -19,10 +19,6 @@ Before publication:
 An ordinary push to `main` runs fast CI only. It does not rerun SolidCraft
 released-stack acceptance merely because a PR was merged.
 
-Release metadata may use a temporary `release/*` branch to `main` when it is
-not part of the product-change PR. The release command itself never changes
-source.
-
 ## Publish
 
 Use a normal release-tracking issue and comment:
@@ -31,28 +27,28 @@ Use a normal release-tracking issue and comment:
 /release vX.Y.Z <exact-40-character-main-sha>
 ~~~
 
-The repository release workflow is intentionally self-contained:
+The GitHub workflow is intentionally thin: it checks out stable `main`, sets
+up Python, checks out the qualified Forge release, then invokes
+`python -m forge_mcp_release` exactly once.
 
-1. checks out stable `main`;
-2. runs repository-local release preflight;
-3. parses the exact release request and requires the repository owner;
-4. validates `pyproject.toml` and the matching dated changelog section;
-5. verifies the requested SHA is current stable `main`, has green central
-   `ci`, and exactly matches the local checkout;
-6. checks out the qualified Forge release and installs the acceptance
-   dependencies;
-7. runs `scripts/run_released_stack_acceptance.sh`, which compiles the
-   maintained fixtures and executes runtime plus existing-design conversion
-   acceptance in one SolidCraft v0.50.0 / CAD runtime v0.3.8 container and one
-   container virtual environment;
-8. reruns the cheap release-state validation to ensure `main` did not move;
-9. creates or verifies the annotated `vX.Y.Z` tag;
-10. creates or verifies the GitHub Release and records it on the triggering
-    issue.
+The Python release transaction then:
 
-No tag or GitHub Release is created if released-stack acceptance fails.
+1. validates the exact release command, repository owner and release metadata;
+2. verifies the requested SHA is current `main`, has green central `ci`, and
+   exactly matches the local checkout;
+3. installs the MCP package and qualified Forge cadlib needed by acceptance;
+4. invokes the released-stack acceptance owned by `modules/ci`;
+5. reruns the cheap current-main/CI validation before publication;
+6. creates or verifies the annotated `vX.Y.Z` tag;
+7. creates or verifies the GitHub Release and records it on the triggering
+   issue.
 
-Release parsing, validation, tagging and GitHub Release publication are owned by
-this repository. The workflow does not call an external release publisher.
+The acceptance module compiles the maintained fixtures and executes runtime plus
+existing-design conversion acceptance in one SolidCraft 0.50.0 / CAD runtime
+v0.3.8 container and one container virtual environment. No tag or GitHub
+Release is created if that acceptance fails.
+
+There is no shell-script orchestration layer between GitHub Actions and the
+Python modules.
 
 Do not create normal release tags manually.

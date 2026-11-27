@@ -46,16 +46,17 @@ jobs:
           CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           CI_MANUAL_FULL: ${{ inputs.full }}
         run: >-
-          python scripts/ci_scope.py
+          PYTHONPATH=modules/ci/src python -m forge_mcp_ci scope
           --event "$CI_EVENT_NAME"
           --base "$CI_BASE_SHA"
           --head "$CI_HEAD_SHA"
           --manual-full "$CI_MANUAL_FULL"
           --github-output "$GITHUB_OUTPUT"
 
-      - name: Test repository policy modules
+      - name: Test repository modules
         run: |
           python -m pip install PyYAML==6.0.2
+          PYTHONPATH=modules/ci/src python -m unittest discover -s modules/ci/tests
           PYTHONPATH=modules/merge-policy/src python -m unittest discover -s modules/merge-policy/tests
           PYTHONPATH=modules/branch-cleanup/src python -m unittest discover -s modules/branch-cleanup/tests
           PYTHONPATH=modules/release/src python -m unittest discover -s modules/release/tests
@@ -79,4 +80,4 @@ jobs:
         if: steps.scope.outputs.runtime == 'true'
         env:
           FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
-        run: bash scripts/run_released_stack_acceptance.sh
+        run: PYTHONPATH=modules/ci/src python -m forge_mcp_ci acceptance

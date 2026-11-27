@@ -1,10 +1,11 @@
 from pathlib import Path
+import os
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from forge_mcp_release.policy import ReleasePolicyError
-from forge_mcp_release.service import preflight, publish
+from forge_mcp_release.service import preflight, publish, transaction
 
 
 SHA = "a" * 40
@@ -81,25 +82,44 @@ class ReleaseServiceTests(unittest.TestCase):
             source_head.assert_called_once_with(root)
 
     @patch("forge_mcp_release.service.GitHub", FakeGitHub)
-    @patch("forge_mcp_release.service._source_head", return_value="b" * 40)
-    def test_preflight_rejects_wrong_checked_out_sha(self, _source_head):
+    @patch("forge_mcp_release.service._source_head", return_value=SHA)
+    def test_transaction_runs_acceptance_before_publish(self, _source_head):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._root(Path(tmp))
-            with self.assertRaisesRegex(ReleasePolicyError, "checked-out source"):
-                preflight(
-                    repository="brainboxemb/tool.cad.mcp.forge",
-                    command=f"/release v0.0.1 {SHA}",
-                    actor="brainboxemb",
-                    owner="brainboxemb",
-                    token="token",
-                    source_root=root,
-                )
+            forge = root / "forge"
+            forge.mkdir()
+            events = []
+
+            def install(source_root, forge_source_root):
+                self.assertEqual((source_root, forge_source_root), (root, forge))
+                events.append("install")
+
+            def acceptance():
+                self.assertEqual(os.environ["FORGE_SOURCE_ROOT"], str(forge))
+                self.assertIsNone(FakeGitHub.tag)
+                events.append("acceptance")
+
+            tag, url = transaction(
+                repository="brainboxemb/tool.cad.mcp.forge",
+                command=f"/release v0.0.1 {SHA}",
+                actor="brainboxemb",
+                owner="brainboxemb",
+                issue_number=45,
+                token="token",
+                source_root=root,
+                forge_source_root=forge,
+                acceptance=acceptance,
+                install_dependencies=install,
+            )
+            self.assertEqual(events, ["install", "acceptance"])
+            self.assertEqual(tag, "v0.0.1")
+            self.assertTrue(url.endswith("/v0.0.1"))
 
     @patch("forge_mcp_release.service.GitHub", FakeGitHub)
     def test_publish_is_idempotent_for_correct_tag_and_release(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = self._root(Path(tmp))
-            tag, url = publish(
+            first = publish(
                 repository="brainboxemb/tool.cad.mcp.forge",
                 command=f"/release v0.0.1 {SHA}",
                 actor="brainboxemb",
@@ -108,10 +128,7 @@ class ReleaseServiceTests(unittest.TestCase):
                 token="token",
                 source_root=root,
             )
-            self.assertEqual(tag, "v0.0.1")
-            self.assertTrue(url.endswith("/v0.0.1"))
-
-            tag2, url2 = publish(
+            second = publish(
                 repository="brainboxemb/tool.cad.mcp.forge",
                 command=f"/release v0.0.1 {SHA}",
                 actor="brainboxemb",
@@ -120,7 +137,7 @@ class ReleaseServiceTests(unittest.TestCase):
                 token="token",
                 source_root=root,
             )
-            self.assertEqual((tag2, url2), (tag, url))
+            self.assertEqual(second, first)
 
     @patch("forge_mcp_release.service.GitHub", FakeGitHub)
     def test_publish_rejects_wrong_owner(self):

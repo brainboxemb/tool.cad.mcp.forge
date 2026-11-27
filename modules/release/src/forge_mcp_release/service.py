@@ -2,8 +2,11 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 import subprocess
+import sys
+from typing import Callable
 
 from .github import GitHub
 from .policy import ReleasePolicyError, parse_command, validate_source
@@ -60,8 +63,6 @@ def preflight(
     token: str,
     source_root: Path,
 ) -> tuple[str, str]:
-    """Validate the exact local/current-main source before expensive acceptance."""
-
     tag, target_sha, _, _ = _validated_request(
         repository=repository,
         command=command,
@@ -76,6 +77,20 @@ def preflight(
             f"checked-out source is not release SHA: {local_head} != {target_sha}"
         )
     return tag, target_sha
+
+
+def _install_acceptance_dependencies(
+    source_root: Path,
+    forge_source_root: Path,
+) -> None:
+    cadlib = forge_source_root / "cadlib"
+    if not cadlib.is_dir():
+        raise ReleasePolicyError(f"Forge cadlib not found: {cadlib}")
+    subprocess.run(
+        [sys.executable, "-m", "pip", "install", str(source_root), str(cadlib)],
+        cwd=source_root,
+        check=True,
+    )
 
 
 def publish(
@@ -115,6 +130,52 @@ def publish(
 
     github.comment(
         issue_number,
-        f"Published and verified `{tag}` at `{target_sha}`: {url}",
+        f"Published and verified {tag} at {target_sha}: {url}",
     )
     return tag, url
+
+
+def transaction(
+    *,
+    repository: str,
+    command: str,
+    actor: str,
+    owner: str,
+    issue_number: int,
+    token: str,
+    source_root: Path,
+    forge_source_root: Path,
+    acceptance: Callable[[], None] | None = None,
+    install_dependencies: Callable[[Path, Path], None] = _install_acceptance_dependencies,
+) -> tuple[str, str]:
+    preflight(
+        repository=repository,
+        command=command,
+        actor=actor,
+        owner=owner,
+        token=token,
+        source_root=source_root,
+    )
+    install_dependencies(source_root, forge_source_root)
+
+    previous_forge_root = os.environ.get("FORGE_SOURCE_ROOT")
+    os.environ["FORGE_SOURCE_ROOT"] = str(forge_source_root)
+    try:
+        if acceptance is None:
+            from forge_mcp_ci.acceptance import run as acceptance
+        acceptance()
+    finally:
+        if previous_forge_root is None:
+            os.environ.pop("FORGE_SOURCE_ROOT", None)
+        else:
+            os.environ["FORGE_SOURCE_ROOT"] = previous_forge_root
+
+    return publish(
+        repository=repository,
+        command=command,
+        actor=actor,
+        owner=owner,
+        issue_number=issue_number,
+        token=token,
+        source_root=source_root,
+    )

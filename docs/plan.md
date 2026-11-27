@@ -100,8 +100,7 @@ edits.
   heredocs and batched runtime plus conversion acceptance into one SolidCraft
   container/venv setup.
 - #77 published MCP v0.0.4 from qualified stable `main`.
-- #80 moved the stable full released-stack gate from every `main` push into
-  the exact repository-local `/release` transaction.
+- #80 moved the stable full released-stack gate from every `main` push into\n  the exact repository-local `/release` transaction and consolidated CI\n  support under the repository `modules/ci` Python module.
 
 ## Next checkpoint
 
