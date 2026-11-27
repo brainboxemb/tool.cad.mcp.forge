@@ -70,7 +70,7 @@ jobs:
             -e SOLIDCRAFT_TEST_COMMANDS=/repo/build/runtime-fixture/build/solidcraft.json \
             -v "$PWD:/repo:ro" \
             -w /repo \
-            ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.8 \
             sh -c "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/mcp-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_runtime.py"
 
       - name: Prepare existing-design conversion fixture
@@ -109,7 +109,7 @@ jobs:
             -e SOLIDCRAFT_TRANSLATED_COMMANDS=/repo/build/conversion-fixture/build/translated.json \
             -v "$PWD:/repo:ro" \
             -w /repo \
-            ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.8 \
             sh -c "python -m venv /tmp/conversion-venv && /tmp/conversion-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/conversion-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_conversion.py"
 
       - name: Test repository policy modules
