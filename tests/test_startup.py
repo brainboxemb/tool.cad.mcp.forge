@@ -11,7 +11,7 @@ from fastmcp.client.transports import StdioTransport
 import pytest
 
 
-def _fake_solidcraft(tmp_path: Path, version: str = "0.49.0") -> Path:
+def _fake_solidcraft(tmp_path: Path, version: str = "0.50.0") -> Path:
     path = tmp_path / "solidcraft-test"
     path.write_text(
         "#!/usr/bin/env python3\n"
@@ -56,7 +56,7 @@ def test_doctor_accepts_explicit_catalog_and_model_root(tmp_path):
     report = json.loads(result.stdout)
     assert report["ready"] is True
     assert report["forge"]["version"] == "0.25.0"
-    assert report["solidcraft"]["version"] == "0.49.0"
+    assert report["solidcraft"]["version"] == "0.50.0"
     assert report["workspace"]["root"] == str(model.resolve())
     assert report["workspace"]["cad_library_root"] == str(library.resolve())
     assert report["workspace"]["catalog_bound"] is True
