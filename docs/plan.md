@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.7` from stable
-`main` commit `57c9e0de05d27d895292a40dbbda3b9d270d7ea1`.
+The qualified local Forge MCP baseline is released as `v0.0.8` from stable
+`main` commit `da720b8001b3e563cd8c1b56de459425979a0404`.
 
 The accepted stack is:
 
@@ -70,12 +70,14 @@ only to create the exact `main` CI record required by release.
 
 ### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.7 is published and consumed by the template/concrete workspace.
+MCP v0.0.8 is published and consumed by the template/concrete workspace.
 Real Windows Codex acceptance has now proven MCP discovery, fast status,
 release-matched knowledge access and the generated workbench skill router.
-`forge-modeling` now teaches and CI-compiles the minimal `scpf/model.py`
-contract. The current gate is to resume the 60 × 20 × 4 mm / Ø8 live
-SolidCraft apply/inspect/mutate/view/render demo.
+`forge-modeling` now teaches the minimal `scpf/model.py` contract plus generic
+Forge idioms without prescribing model-specific geometry, and its native
+`Hole` example follows the qualified additive feature-history semantics. The
+current gate is to resume the 60 × 20 × 4 mm / Ø8 live SolidCraft
+apply/inspect/mutate/view/render demo.
 
 ### WS2 — Forge compatibility evolution
 
@@ -96,8 +98,9 @@ edits.
 
 ## Recently completed
 
-- #96 made `forge-modeling` the real new-model skill, including executable
-  `scpf/model.py` examples compiled against Forge/SCPF v0.25.0 in package CI.
+- #106 reconciled the stable plan with the published and workspace-adopted MCP `v0.0.8` baseline.
+- #103 published and verified MCP `v0.0.8` from exact stable main commit `da720b8001b3e563cd8c1b56de459425979a0404`.
+- #96 made `forge-modeling` the real new-model skill and was refined in v0.0.8 so the maintained `scpf/model.py` contract stays separate from generic Forge API idioms; native `Hole` composition now uses `+`.
 - #91 removed per-call Forge Git validation from knowledge/reference and compile
   calls; exact checkout validation remains in the explicit doctor gate.
 - #88 made version-only release metadata PRs fast while preserving full
@@ -120,7 +123,7 @@ edits.
 ## Next checkpoint
 
 Resume the already-started Windows 60 × 20 × 4 mm / Ø8 live SolidCraft demo
-against workspace-pinned MCP v0.0.7. Treat #95 as a separate documentation
+against workspace-pinned MCP v0.0.8. Treat #95 as a separate documentation
 alignment task unless the live engine exposes an actual 0.50 command mismatch.
 
 After that checkpoint, continue broad MCP product work from the current issue
