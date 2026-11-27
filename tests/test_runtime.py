@@ -38,7 +38,7 @@ def test_real_compile_replay_evaluate_and_snapshot(tmp_path, monkeypatch):
             replay = await client.call_tool("solidcraft_replay", {})
             assert not replay.is_error
             assert replay.data["ok"] is True
-            assert replay.data["solidcraft_version"] == "0.49.0"
+            assert replay.data["solidcraft_version"] == "0.50.0"
             native = tmp_path / replay.data["native"]
             assert native.is_file() and native.stat().st_size > 0
 
@@ -59,7 +59,7 @@ def test_real_compile_replay_evaluate_and_snapshot(tmp_path, monkeypatch):
             )
             assert not components.is_error
             assert components.data["ok"] is True
-            assert components.data["solidcraft_version"] == "0.49.0"
+            assert components.data["solidcraft_version"] == "0.50.0"
             assert components.data["result"] is not None
             assert (tmp_path / "build" / "components.json").is_file()
 
