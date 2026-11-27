@@ -7,6 +7,24 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.6] - 2026-11-27
+
+### Changed
+
+- Remove per-call Forge Git validation from knowledge/reference reads and
+  `forge_compile`.
+- Keep exact Forge tag and clean-checkout qualification in the explicit
+  operator `doctor` gate.
+- Add regression coverage proving parallel skill-reference reads and compile
+  do not invoke Git validation.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.5] - 2026-11-27
 
 ### Changed
