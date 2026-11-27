@@ -34,6 +34,10 @@ def test_skill_entrypoints_without_forge(monkeypatch):
             assert "def build(self):" in content
             assert "Plate()" in content
             assert "lower-case numeric class fields" in content
+            assert "Common Forge idioms" in content
+            assert "return plate + hole" in content
+            assert "feature operation" in content
+            assert "skill_reference" in content
             assert "solidcraft-control" in content
             with pytest.raises(Exception, match="FORGE_SOURCE_ROOT"):
                 await client.call_tool("skill_reference", {"skill": "forge-modeling", "file": "references/index.json"})

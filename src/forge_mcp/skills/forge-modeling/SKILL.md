@@ -60,9 +60,15 @@ Forge's runner also makes the public SCPF modeling symbols available while execu
 
 Keep symbolic relationships symbolic. Do not turn a parameter into a concrete Python number just to make a feature work.
 
-### Adding a centred through-hole
+### Common Forge idioms
 
-Prefer the highest-level qualified feature that expresses the design intent. A centred through-hole in a plate can start as:
+The root-model example above teaches the file contract, not a recipe for the user's geometry. For actual modeling choices, use the version-matched Forge references and choose the API that best expresses the design intent.
+
+A few common idioms are worth recognizing:
+
+- `Anchor` selects which datum of a primitive or attachment is placed at the requested position.
+- `Faces` identifies cardinal target faces such as `Faces.TOP` for face-relative features.
+- A native `Hole` is a feature operation. Add that operation to the design history with `+`; the feature itself removes material.
 
 ```python
 from scpf import Anchor, Box, Depth, Faces, Hole
@@ -85,13 +91,16 @@ class Plate:
             d=self.hole_d,
             depth=Depth.THROUGH_ALL,
         ).on(plate, face=Faces.TOP)
-        return plate - hole
+        return plate + hole
 
 
 Plate()
 ```
 
-Use an explicit `Sketch` when the design itself contains authored 2D profile intent or when the needed feature is not represented by a qualified high-level Forge feature. For sketch/profile/extrude work, read the exact API signatures and a nearby qualified example before writing the source; do not guess coordinate or anchor semantics.
+- Use an explicit `Sketch` when the design contains authored 2D profile intent. A sketch is created in a plane or on a face and then consumed by an operation such as `extrude()`.
+- Do not infer signatures, attachment rules, coordinate semantics or operator behavior from memory. Read `references/api/<Symbol or Symbol.method>.json` and a nearby qualified example with `skill_reference` before using unfamiliar API.
+
+These are API idioms, not mandatory construction steps. The agent remains responsible for designing the actual model from the user's requirements.
 
 ## Build and verify
 
