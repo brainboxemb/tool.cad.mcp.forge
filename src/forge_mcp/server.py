@@ -7,7 +7,7 @@ from importlib.metadata import version
 
 from fastmcp import FastMCP
 from fastmcp.utilities.types import Image
-from . import analysis, compiler, diagnostics, runtime, skills, workspace
+from . import analysis, compiler, diagnostics, live, runtime, skills, workspace
 
 mcp = FastMCP("Forge CAD", instructions="Start CAD work by calling skill_list and reading the relevant SKILL.md through skill_reference. The configured target owner is authoritative for edits. Assemblies may inspect explicitly referenced dependency owners through read-only catalog tools, but never fuzzy-search, switch, or edit another owner implicitly.")
 
@@ -121,6 +121,54 @@ def solidcraft_components(
     return runtime.components(model_path, output_path, compact, bodies)
 
 @mcp.tool
+def solidcraft_live_new(name: str | None = None) -> dict:
+    """Create a new active design in the running SolidCraft GUI."""
+    return live.new_design(name)
+
+
+@mcp.tool
+def forge_live(
+    source_path: str | None = None,
+    new: bool = True,
+    design_name: str | None = None,
+) -> dict:
+    """Compile Forge source and apply it directly to the running SolidCraft GUI."""
+    return live.forge_live(source_path, new, design_name)
+
+
+@mcp.tool
+def solidcraft_live_execute(command: str, params: dict | None = None) -> dict:
+    """Execute one native SolidCraft engine command in the active GUI design."""
+    return live.execute(command, params)
+
+
+@mcp.tool
+def solidcraft_live_inspect(
+    measure: bool = False,
+    sketch_counts: bool = False,
+    timeline: bool | str = "summary",
+    bodies: bool | str = "names",
+) -> dict:
+    """Inspect parameters, timeline, bodies and selection of the active GUI design."""
+    return live.inspect(measure, sketch_counts, timeline, bodies)
+
+
+@mcp.tool
+def solidcraft_live_render(
+    output_path: str | None = None,
+    width: int = 960,
+    height: int = 600,
+    grid: bool = False,
+    axes: bool = False,
+) -> Image:
+    """Render the active SolidCraft GUI model using its current camera."""
+    return Image(
+        data=live.render(output_path, width, height, grid, axes),
+        format="png",
+    )
+
+
+@mcp.tool
 def solidcraft_snapshot(
     model_path: str,
     output_path: str = "build/model.png",
@@ -172,6 +220,7 @@ def main() -> None:
     workspace.set_write_enabled(args.transport == "stdio")
     compiler.set_execution_enabled(args.transport == "stdio")
     runtime.set_execution_enabled(args.transport == "stdio")
+    live.set_execution_enabled(args.transport == "stdio")
     if args.transport == "stdio":
         mcp.run(transport="stdio")
     else:
