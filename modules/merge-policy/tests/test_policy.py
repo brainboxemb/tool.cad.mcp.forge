@@ -37,32 +37,29 @@ class MergePolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(MergePolicyError, "closed without merge"):
             merge_required({"state": "closed", "merged": False})
 
-    def test_feature_to_dev_is_squash(self):
-        self.assertEqual(merge_method(head="issue/10-change", base="dev"), "squash")
+    def test_temporary_branches_to_main_are_squashed(self):
+        for head in (
+            "issue/10-change",
+            "fix/11-bug",
+            "feature/12-capability",
+            "docs/13-guide",
+            "chore/14-maintenance",
+            "release/v1.2.3",
+        ):
+            with self.subTest(head=head):
+                self.assertEqual(merge_method(head=head, base="main"), "squash")
 
-    def test_experimental_routes(self):
-        self.assertEqual(merge_method(head="feature/73-work", base="exp"), "squash")
-        self.assertEqual(merge_method(head="dev", base="exp"), "merge")
-        self.assertEqual(merge_method(head="exp", base="dev"), "merge")
-        for head, base in (("exp", "main"), ("main", "exp"), ("release/v1", "exp"), ("release/v1", "dev")):
+    def test_permanent_or_old_lane_integrations_are_rejected(self):
+        for head, base in (
+            ("dev", "main"),
+            ("main", "dev"),
+            ("exp", "main"),
+            ("main", "exp"),
+            ("issue/10-change", "dev"),
+            ("release/v1.2.3", "dev"),
+        ):
             with self.subTest(head=head, base=base), self.assertRaises(MergePolicyError):
                 merge_method(head=head, base=base)
-
-    def test_release_to_main_is_squash(self):
-        self.assertEqual(
-            merge_method(head="release/v1.2.3", base="main"),
-            "squash",
-        )
-
-    def test_dev_to_main_is_merge_commit(self):
-        self.assertEqual(merge_method(head="dev", base="main"), "merge")
-
-    def test_main_to_dev_is_merge_commit(self):
-        self.assertEqual(merge_method(head="main", base="dev"), "merge")
-
-    def test_feature_to_main_is_rejected(self):
-        with self.assertRaises(MergePolicyError):
-            merge_method(head="issue/10-change", base="main")
 
     @patch("cad_model_merge_policy.__main__.api")
     def test_green_ci_allows_unrelated_pending_merge_check(self, api):
@@ -103,25 +100,25 @@ class MergePolicyTests(unittest.TestCase):
             require_green_ci("owner/repo", "sha", 25, "token")
 
     @patch("cad_model_merge_policy.__main__.api")
-    def test_dispatch_workflow_targets_local_workflow_and_base_ref(self, api):
-        dispatch_workflow("owner/repo", "ci.yml", "dev", "token")
+    def test_dispatch_workflow_targets_main(self, api):
+        dispatch_workflow("owner/repo", "ci.yml", "main", "token")
         api.assert_called_once_with(
             "owner/repo",
             "actions/workflows/ci.yml/dispatches",
             "token",
             method="POST",
-            body={"ref": "dev"},
+            body={"ref": "main"},
         )
 
     @patch("cad_model_merge_policy.__main__.api")
-    def test_cleanup_workflow_uses_same_target_ref(self, api):
-        dispatch_workflow("owner/repo", "branch-cleanup.yml", "dev", "token")
+    def test_cleanup_workflow_targets_main(self, api):
+        dispatch_workflow("owner/repo", "branch-cleanup.yml", "main", "token")
         api.assert_called_once_with(
             "owner/repo",
             "actions/workflows/branch-cleanup.yml/dispatches",
             "token",
             method="POST",
-            body={"ref": "dev"},
+            body={"ref": "main"},
         )
 
 
