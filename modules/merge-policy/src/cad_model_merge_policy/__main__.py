@@ -90,6 +90,16 @@ def dispatch_workflow(repository: str, workflow: str, ref: str, token: str) -> N
     )
 
 
+def dispatch_post_merge_workflows(
+    repository: str,
+    base: str,
+    token: str,
+) -> None:
+    """Dispatch only cleanup; CI is triggered naturally by the main push."""
+
+    dispatch_workflow(repository, "branch-cleanup.yml", base, token)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repository", required=True)
@@ -129,8 +139,7 @@ def main() -> None:
     if not result.get("merged"):
         raise MergePolicyError(result.get("message", "GitHub did not merge PR"))
 
-    dispatch_workflow(args.repository, "ci.yml", base, token)
-    dispatch_workflow(args.repository, "branch-cleanup.yml", base, token)
+    dispatch_post_merge_workflows(args.repository, base, token)
     print(result["sha"])
 
 

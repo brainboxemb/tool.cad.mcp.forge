@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from cad_model_merge_policy.__main__ import (
-    dispatch_workflow,
+    dispatch_post_merge_workflows,
     merge_required,
     require_green_ci,
 )
@@ -99,26 +99,14 @@ class MergePolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(MergePolicyError, "no central ci"):
             require_green_ci("owner/repo", "sha", 25, "token")
 
-    @patch("cad_model_merge_policy.__main__.api")
-    def test_dispatch_workflow_targets_main(self, api):
-        dispatch_workflow("owner/repo", "ci.yml", "main", "token")
-        api.assert_called_once_with(
+    @patch("cad_model_merge_policy.__main__.dispatch_workflow")
+    def test_post_merge_dispatches_cleanup_only(self, dispatch):
+        dispatch_post_merge_workflows("owner/repo", "main", "token")
+        dispatch.assert_called_once_with(
             "owner/repo",
-            "actions/workflows/ci.yml/dispatches",
+            "branch-cleanup.yml",
+            "main",
             "token",
-            method="POST",
-            body={"ref": "main"},
-        )
-
-    @patch("cad_model_merge_policy.__main__.api")
-    def test_cleanup_workflow_targets_main(self, api):
-        dispatch_workflow("owner/repo", "branch-cleanup.yml", "main", "token")
-        api.assert_called_once_with(
-            "owner/repo",
-            "actions/workflows/branch-cleanup.yml/dispatches",
-            "token",
-            method="POST",
-            body={"ref": "main"},
         )
 
 

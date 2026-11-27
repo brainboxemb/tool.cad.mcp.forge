@@ -76,46 +76,41 @@ The target owner remains the only workspace and the only writable boundary. Asse
 
 Forge compilation keeps its source and outputs inside the target owner. Forge 0.25's own model import context detects the enclosing `models/` tree and makes the project root available for existing namespace imports such as `from models.components.simple_mft...`; MCP does not add a parallel import mechanism. Dependency owners remain read-only through MCP. Target selection and dependency resolution are therefore separate concerns: one exact writable target, many exact read-only dependencies.
 
-
-## CI qualification
+## CI contract
 
 The central workflow keeps one required PR check named `ci`; repository
-`/merge` continues to gate only on that stable check name. Qualification is
-ordered from cheapest to most expensive: repository policy tests and the normal
-installed MCP/Forge test suite run first, followed by released SolidCraft stack
-acceptance only when required.
+`/merge` gates on that stable check name.
 
-Pull requests are path-classified by `scripts/ci_scope.py`. Changes to the MCP
-package, packaging, Forge compilation/runtime acceptance tests, acceptance
-fixtures or the central CI workflow require released-stack acceptance.
-Documentation and repository-policy-only pull requests do not start SolidCraft.
-Ordinary pushes to stable `main` run the fast central CI only; they never
-start SolidCraft merely because a PR was merged. An explicit manual CI dispatch
-can request full released-stack acceptance for diagnosis. Normal release
-publication owns the stable full-stack gate: the `/release` workflow first
-validates that its local checkout is the exact requested current `main` SHA
-with green central CI, then runs the complete released-stack acceptance before
-tagging or publishing.
+`modules/ci` owns both change-scope classification and released-stack CAD
+acceptance. Pull requests that can affect the MCP package, Forge compilation,
+packaging, runtime adapters or acceptance fixtures run the complete headless
+released-stack acceptance. Documentation and repository-policy-only pull
+requests do not start SolidCraft.
 
-Released-stack fixture construction is maintained in
-`scripts/prepare_acceptance.py` plus `tests/fixtures/acceptance_box.py`.
-`scripts/run_released_stack_acceptance.sh` is the single maintained runner
-used by runtime-sensitive PR CI, explicit manual full CI and the release
-workflow. Compatible runtime replay/render acceptance and existing-design
-conversion acceptance run inside one
-`ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one temporary Python
-environment.
+An ordinary push to `main` runs the fast central CI only. `/merge` does not
+dispatch CI after integration; the normal `push: main` trigger owns the single
+automatic post-merge check. Manual CI is fast by default and runs full
+released-stack acceptance only when `full=true` is selected.
 
-The structural CI performance budget is deterministic:
+`modules/release` owns the release transaction. Before publication it verifies
+the exact requested current `main` SHA and green central CI, installs the
+release acceptance dependencies, then calls the same Python acceptance function
+from `modules/ci`. Only after that succeeds may it tag and publish.
+
+The maintained acceptance model fixture lives under `modules/ci/fixtures`.
+Runtime replay/render acceptance and existing-design conversion acceptance run
+inside one `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one
+temporary Python environment.
+
+The CI cost contract is:
 
 - documentation/repository-policy-only PR: zero SolidCraft container starts;
 - runtime-sensitive PR: at most one SolidCraft container start;
-- ordinary stable `main` push: zero SolidCraft container starts;
-- explicit manual full CI: exactly one SolidCraft container start;
+- ordinary `main` push: zero SolidCraft container starts;
+- default manual CI: zero SolidCraft container starts;
+- explicit manual `full=true` CI: exactly one SolidCraft container start;
 - `/release` for the exact current stable SHA: exactly one SolidCraft
-  container start before publication;
-- one MCP wheel and one container virtual-environment install serve both real
-  SolidCraft acceptance test modules.
+  container start before publication.
 
 Live GUI acceptance remains outside headless CI because it requires a real
 desktop SolidCraft session.

@@ -56,12 +56,14 @@ The configured target owner is authoritative. AI workflows must not discover or
 switch target owners implicitly. Catalog dependency access is exact-path and
 read-only; it exists only to support reuse by assemblies/subassemblies.
 
-Development-cycle cost is architectural. Normal PRs use one qualification path.
+Development-cycle cost is architectural. Normal PRs use one CI path.
 Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
 sensitive PRs use at most one released CAD runtime container. Ordinary
 `main` pushes run fast CI only. Complete released-stack acceptance belongs to
-runtime-sensitive PRs, explicit manual diagnosis and the exact `/release`
-transaction, never to every merged main SHA.
+runtime-sensitive PRs, explicit manual `full=true` diagnosis and the exact
+`/release` transaction, never to every merged main SHA. `/merge` never
+redispatches central CI after integration; the normal `push: main` check is the
+only automatic post-merge CI run.
 
 ## Active workstreams
 
@@ -98,8 +100,7 @@ edits.
   heredocs and batched runtime plus conversion acceptance into one SolidCraft
   container/venv setup.
 - #77 published MCP v0.0.4 from qualified stable `main`.
-- #80 moved the stable full released-stack gate from every `main` push into
-  the exact repository-local `/release` transaction.
+- #80 moved the stable full released-stack gate from every `main` push into\n  the exact repository-local `/release` transaction and consolidated CI\n  support under the repository `modules/ci` Python module.
 
 ## Next checkpoint
 
