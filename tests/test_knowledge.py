@@ -30,7 +30,7 @@ def test_real_forge_skill_references():
             async def read(file):
                 result = await client.call_tool("skill_reference", {"skill": "forge-modeling", "file": file})
                 assert not result.is_error
-                assert result.data["forge_version"] == "0.19.0"
+                assert result.data["forge_version"] == "0.25.0"
                 return result.data["content"]
             index = json.loads(await read("references/index.json"))
             assert "references/examples/simple-box.py" in index["examples"]
@@ -43,6 +43,7 @@ def test_real_forge_skill_references():
             assert method["signature"]
             assert "class SimpleBox" in await read("references/examples/simple-box.py")
             assert "Placement" in await read("references/api.md")
+            assert await read("references/cheatsheet.yml")
             assert await read("references/guide/getting-started.html")
             with pytest.raises(Exception, match="Unknown skill reference"):
                 await read("../secret")

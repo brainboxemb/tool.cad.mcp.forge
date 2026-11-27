@@ -12,7 +12,7 @@ _SKILLS = {
 
 _REFS = {
     "references/api.md": "docs/api.md",
-    "references/cheatsheet.yml": "docs/cheatsheet.yml",
+    "references/cheatsheet.yml": "site/source/cheatsheet.yml",
     "references/solidcraft-commands.md": "docs/reference/solidcraft/0.49.0/commands.md",
 }
 
@@ -33,7 +33,7 @@ def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
         root = knowledge.source_root()
         content = json.dumps({
             "documents": list(_REFS),
-            "guides": [f"references/guide/{p.name}" for p in sorted((root / "docs/guide").glob("*.html"))],
+            "guides": [f"references/guide/{p.name}" for p in sorted((root / "site/source/guide").glob("*.html"))],
             "examples": [f"references/examples/{p.parent.parent.name}.py" for p in sorted((root / "models").glob("*/scpf/model.py"))],
             "api_symbols": list(knowledge._api().__all__),
             "api_lookup_pattern": "references/api/<Symbol or Symbol.method>.json",
@@ -43,7 +43,7 @@ def skill_reference(skill: str, file: str = "SKILL.md") -> dict:
         content = knowledge._read(root, root / _REFS[file])
     elif match := re.fullmatch(r"references/guide/([a-z0-9-]+\.html)", file):
         root = knowledge.source_root()
-        content = knowledge._read(root, root / "docs/guide" / match[1])
+        content = knowledge._read(root, root / "site/source/guide" / match[1])
     elif match := re.fullmatch(r"references/examples/([a-zA-Z0-9][a-zA-Z0-9_-]*)\.py", file):
         content = knowledge.example_read(match[1])["source"]
     elif match := re.fullmatch(r"references/api/([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z][A-Za-z0-9_]*)?)\.json", file):
