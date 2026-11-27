@@ -8,8 +8,7 @@ Qualified baseline:
 
 - Python 3.12;
 - FastMCP 2.14.7;
-- Forge/SCPF 0.19.0 from commit
-  `ce9cd4439efe51edc360b7bfffb77b950e218d32`;
+- Forge/SCPF 0.25.0 from release tag `v0.25.0`;
 - SolidCraft 0.49.0;
 - local stdio execution.
 
@@ -53,13 +52,13 @@ New-Item -ItemType Directory -Force C:\Dev\SolidCraft | Out-Null
 Set-Location C:\Dev\SolidCraft
 
 git clone https://github.com/brainboxemb/lib.py.solidcraft.forge.git forge-release
-git -C forge-release checkout --detach ce9cd4439efe51edc360b7bfffb77b950e218d32
+git -C forge-release checkout --detach v0.25.0
 
 python -m pip install .\forge-release\cadlib
 python -c "import importlib.metadata as m; print(m.version('scpf'))"
 ```
 
-The last command must print `0.19.0`.
+The last command must print `0.25.0`.
 
 Do not update this checkout independently. The Forge source checkout and the
 installed `scpf` package are one qualified pair. Move to another Forge
@@ -325,8 +324,8 @@ git -C C:\Dev\SolidCraft\forge-release rev-parse HEAD
 git -C C:\Dev\SolidCraft\forge-release status --short
 ```
 
-The qualified baseline requires `scpf 0.19.0`, commit
-`ce9cd4439efe51edc360b7bfffb77b950e218d32`, and no tracked modifications.
+The qualified baseline requires `scpf 0.25.0`, checkout HEAD at release tag
+`v0.25.0`, and no tracked modifications.
 
 ### `doctor` reports SolidCraft not ready
 
