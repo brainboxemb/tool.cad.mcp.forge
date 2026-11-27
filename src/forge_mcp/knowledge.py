@@ -5,8 +5,8 @@ import os
 from pathlib import Path
 import subprocess
 
-FORGE_VERSION = "0.19.0"
-FORGE_COMMIT = "ce9cd4439efe51edc360b7bfffb77b950e218d32"
+FORGE_VERSION = "0.25.0"
+FORGE_REF = "v0.25.0"
 
 
 class KnowledgeError(ValueError):
