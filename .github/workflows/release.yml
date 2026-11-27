@@ -1,0 +1,55 @@
+# Thin repository-local Forge CAD MCP release adapter.
+# Release parsing, validation, tagging and GitHub Release publication are owned
+# by modules/release in this repository.
+
+name: Publish MCP release
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    if: >-
+      !github.event.issue.pull_request &&
+      startsWith(github.event.comment.body, '/release ')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      checks: read
+
+    steps:
+      - name: Check out stable MCP source
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 1
+          fetch-tags: true
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Publish exact stable release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PYTHONPATH: modules/release/src
+          RELEASE_REPOSITORY: ${{ github.repository }}
+          RELEASE_COMMAND: ${{ github.event.comment.body }}
+          RELEASE_ACTOR: ${{ github.actor }}
+          RELEASE_OWNER: ${{ github.repository_owner }}
+          RELEASE_ISSUE: ${{ github.event.issue.number }}
+        run: |
+          python -m forge_mcp_release \
+            --repository "$RELEASE_REPOSITORY" \
+            --command "$RELEASE_COMMAND" \
+            --actor "$RELEASE_ACTOR" \
+            --owner "$RELEASE_OWNER" \
+            --issue-number "$RELEASE_ISSUE" \
+            --source-root .

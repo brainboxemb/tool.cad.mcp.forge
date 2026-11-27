@@ -4,9 +4,9 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-The first usable local Forge MCP baseline is stable on `main` at
-`80e03b6395f53cfe7c69f08c56612b9914e29536`. Stable qualification run
-`45781197700` passed the package, real SolidCraft runtime, existing-design
+The qualified local Forge MCP baseline is stable on `main` at
+`a51814529763b176cb963f84b10d72e1838cb8bb`. Stable main qualification run
+`45790390980` passed the package, real SolidCraft runtime, existing-design
 conversion and repository-policy gates.
 
 The stable baseline includes:
@@ -17,12 +17,18 @@ The stable baseline includes:
   `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6`;
 - skills-first authoring through `forge-modeling` and
   `solidcraft-to-forge`;
-- bounded local workspace reads/source writes;
+- a three-checkout local setup: Forge MCP, exact Forge release and CAD library;
+- one explicit target owner inside the CAD library as the only writable
+  workspace/build/runtime scope;
+- exact read-only dependency-owner access for assemblies/subassemblies;
+- Forge compilation with the configured CAD-library root available for existing
+  `from models...` imports;
 - Forge Python -> SolidCraft command JSON compilation;
 - SolidCraft replay, compact native analysis, component inspection and PNG
   rendering through MCP;
 - independent existing-SolidCraft -> Forge workflow acceptance;
-- explicit local startup arguments and a non-CAD `doctor` readiness gate.
+- explicit local startup arguments and a non-CAD `doctor` readiness gate;
+- a Windows + VS Code + Conda setup guide matching the stable configuration.
 
 Local model iteration is independent of GitHub after setup. No MCP-specific
 Docker image is required.
@@ -41,20 +47,24 @@ Generated Python and SolidCraft execution remain local-stdio-only. Streamable
 HTTP stays a loopback/read-only development transport until authentication,
 isolated workspaces and sandboxed execution exist.
 
+The configured target owner is authoritative. AI workflows must not discover or
+switch target owners implicitly. Catalog dependency access is exact-path and
+read-only; it exists only to support reuse by assemblies/subassemblies.
+
 ## Active workstreams
 
-### WS1 — stable promotion of explicit target/dependency binding
+### WS1 — governed first MCP release
 
-The qualified dev baseline now binds one exact writable target owner inside one
-configured CAD-library checkout. Assemblies and subassemblies may inspect exact
-dependency owners elsewhere in that same catalog read-only, and Forge
-compilation resolves existing `from models...` imports against the catalog
-root. AI workflows may not discover or switch target models implicitly. The
-Windows VS Code + Conda guide uses the same three-checkout setup.
+Issue #45 replaces the initial #43 adapter with repository-local release
+ownership. `modules/release` owns request parsing, package/changelog
+validation, stable-main/CI gates, annotated tag creation and GitHub Release
+publication. The thin workflow only supplies GitHub event context and token.
 
 ## Open issue assignment
 
-No unfinished implementation work is assigned before the next checkpoint.
+| Issue | Lane/owner | Status | Next action |
+| --- | --- | --- | --- |
+| #45 | MCP `dev` -> `main` | now | Integrate the local release capability, promote it to stable `main`, then publish `v0.0.1` |
 
 ## Recently completed
 
@@ -71,10 +81,17 @@ No unfinished implementation work is assigned before the next checkpoint.
 - #21 one-time bootstrap CI alignment required to remove the initial
   add/add workflow conflict before #16.
 - #25 Windows VS Code + Conda local setup guide.
-- #26 explicit writable target owner plus read-only CAD-library dependency access.
+- #26 explicit writable target owner plus read-only CAD-library dependency
+  access.
+- #35 qualified stable promotion of the target/dependency baseline.
+- #43 initial governed release adapter; superseded by #45 before stable promotion
+  because publication ownership must remain repository-local.
 
 ## Next checkpoint
 
-Open a clean qualified `dev -> main` promotion with no source changes. After
-that stable promotion, decide the first version/tag/release packaging from the
-new `main` baseline. Do not add a Docker distribution merely to publish the MCP.
+Publish `v0.0.1` through the governed release workflow from the exact
+qualified `main` head. After that, update the supported Forge baseline in a
+separate compatibility change; do not combine the Forge 0.24 adoption with the
+first MCP release transaction.
+
+Do not add a Docker distribution merely to publish the MCP.
