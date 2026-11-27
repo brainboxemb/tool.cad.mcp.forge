@@ -75,3 +75,39 @@ When this binding is active, the selected model folder becomes the workspace roo
 The target owner remains the only workspace and the only writable boundary. Assemblies and subassemblies can inspect reusable owners elsewhere in the same configured CAD library through `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)`. Both calls require exact catalog-relative paths; `catalog_dependency_list` accepts only a directory containing its own `model.yml`, and neither tool offers fuzzy search across the catalog. Native `.sc` dependencies remain opaque and are not exposed as text.
 
 Forge compilation keeps its source and outputs inside the target owner. Forge 0.25's own model import context detects the enclosing `models/` tree and makes the project root available for existing namespace imports such as `from models.components.simple_mft...`; MCP does not add a parallel import mechanism. Dependency owners remain read-only through MCP. Target selection and dependency resolution are therefore separate concerns: one exact writable target, many exact read-only dependencies.
+
+
+## CI qualification
+
+The central workflow keeps one required PR check named `ci`; repository
+`/merge` continues to gate only on that stable check name. Qualification is
+ordered from cheapest to most expensive: repository policy tests and the normal
+installed MCP/Forge test suite run first, followed by released SolidCraft stack
+acceptance only when required.
+
+Pull requests are path-classified by `scripts/ci_scope.py`. Changes to the MCP
+package, packaging, Forge compilation/runtime acceptance tests, acceptance
+fixtures or the central CI workflow require released-stack acceptance.
+Documentation and repository-policy-only pull requests do not start SolidCraft.
+Every push to stable `main` and every manual CI dispatch runs the complete
+released-stack acceptance regardless of changed paths, so the exact stable SHA
+used by the release gate has real CAD-runtime evidence.
+
+Released-stack fixture construction is maintained in
+`scripts/prepare_acceptance.py` plus `tests/fixtures/acceptance_box.py`; the
+workflow no longer authors Python models through shell heredocs. Compatible
+runtime replay/render acceptance and existing-design conversion acceptance run
+inside one `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one
+temporary Python environment.
+
+The structural CI performance budget is deterministic:
+
+- documentation/repository-policy-only PR: zero SolidCraft container starts;
+- runtime-sensitive PR: at most one SolidCraft container start;
+- stable `main` or manual full qualification: exactly one SolidCraft
+  container start when the job reaches released-stack acceptance;
+- one MCP wheel and one container virtual-environment install serve both real
+  SolidCraft acceptance test modules.
+
+Live GUI acceptance remains outside headless CI because it requires a real
+desktop SolidCraft session.

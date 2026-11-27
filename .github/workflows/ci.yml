@@ -1,116 +1,49 @@
 name: CI
+
 on:
   pull_request:
     branches: [main]
   push:
     branches: [main]
   workflow_dispatch:
+
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
+
 permissions:
   contents: read
+
 jobs:
   verify:
     name: ci
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.12"
-      - name: Check out qualified Forge release
-        if: hashFiles('pyproject.toml') != ''
+      - name: Check out MCP source
         uses: actions/checkout@v7
         with:
-          repository: brainboxemb/lib.py.solidcraft.forge
-          ref: v0.25.0
-          path: forge-release
+          fetch-depth: 0
           persist-credentials: false
-      - name: Test installed MCP package
-        if: hashFiles('pyproject.toml') != ''
-        run: |
-          python -m pip install '.[test]' ./forge-release/cadlib
-          FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
-      - name: Prepare compiled SolidCraft runtime fixture
-        if: hashFiles('pyproject.toml') != ''
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Classify released-stack acceptance
+        id: scope
         env:
-          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
-          FORGE_WORKSPACE_ROOT: ${{ github.workspace }}/build/runtime-fixture
-        run: |
-          rm -rf build/runtime-fixture
-          mkdir -p build/runtime-fixture/source
-          cat > build/runtime-fixture/source/model.py <<'PY'
-          class RuntimeBox:
-              length = 20.0
-              width = 10.0
-              height = 5.0
-
-              def build(self):
-                  return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
-
-          RuntimeBox()
-          PY
-          python - <<'PY'
-          from forge_mcp import compiler
-          result = compiler.compile_model("source/model.py")
-          assert result["ok"], result
-          print(result)
-          PY
-          rm -rf build/runtime-wheel
-          python -m pip wheel . --no-deps -w build/runtime-wheel
-
-      - name: Test released SolidCraft runtime through MCP
-        if: hashFiles('pyproject.toml') != ''
-        run: |
-          docker run --rm \
-            -e SOLIDCRAFT_RUNTIME_ACCEPTANCE=1 \
-            -e SOLIDCRAFT_TEST_COMMANDS=/repo/build/runtime-fixture/build/solidcraft.json \
-            -v "$PWD:/repo:ro" \
-            -w /repo \
-            ghcr.io/brainboxemb/cad-solidcraft:v0.3.8 \
-            sh -c "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/mcp-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_runtime.py"
-
-      - name: Prepare existing-design conversion fixture
-        if: hashFiles('pyproject.toml') != ''
-        env:
-          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
-          FORGE_WORKSPACE_ROOT: ${{ github.workspace }}/build/conversion-fixture
-        run: |
-          rm -rf build/conversion-fixture
-          mkdir -p build/conversion-fixture/source build/conversion-fixture/build
-          cp tests/fixtures/existing-box.json build/conversion-fixture/original.json
-          cat > build/conversion-fixture/source/model.py <<'PY'
-          class TranslatedBox:
-              length = 20.0
-              width = 10.0
-              height = 5.0
-
-              def build(self):
-                  return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
-
-          TranslatedBox()
-          PY
-          python - <<'PY'
-          from forge_mcp import compiler
-          result = compiler.compile_model("source/model.py", "build/translated.json")
-          assert result["ok"], result
-          print(result)
-          PY
-
-      - name: Test existing SolidCraft design to Forge workflow
-        if: hashFiles('pyproject.toml') != ''
-        run: |
-          docker run --rm \
-            -e SOLIDCRAFT_CONVERSION_ACCEPTANCE=1 \
-            -e SOLIDCRAFT_ORIGINAL_COMMANDS=/repo/tests/fixtures/existing-box.json \
-            -e SOLIDCRAFT_TRANSLATED_COMMANDS=/repo/build/conversion-fixture/build/translated.json \
-            -v "$PWD:/repo:ro" \
-            -w /repo \
-            ghcr.io/brainboxemb/cad-solidcraft:v0.3.8 \
-            sh -c "python -m venv /tmp/conversion-venv && /tmp/conversion-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/conversion-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_conversion.py"
+          CI_EVENT_NAME: ${{ github.event_name }}
+          CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: >-
+          python scripts/ci_scope.py
+          --event "$CI_EVENT_NAME"
+          --base "$CI_BASE_SHA"
+          --head "$CI_HEAD_SHA"
+          --github-output "$GITHUB_OUTPUT"
 
       - name: Test repository policy modules
         run: |
@@ -118,3 +51,41 @@ jobs:
           PYTHONPATH=modules/merge-policy/src python -m unittest discover -s modules/merge-policy/tests
           PYTHONPATH=modules/branch-cleanup/src python -m unittest discover -s modules/branch-cleanup/tests
           PYTHONPATH=modules/release/src python -m unittest discover -s modules/release/tests
+
+      - name: Check out qualified Forge release
+        uses: actions/checkout@v7
+        with:
+          repository: brainboxemb/lib.py.solidcraft.forge
+          ref: v0.25.0
+          path: forge-release
+          persist-credentials: false
+
+      - name: Install and test MCP package
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+        run: |
+          python -m pip install '.[test]' ./forge-release/cadlib
+          python -m pytest -q tests
+
+      - name: Prepare released-stack acceptance
+        if: steps.scope.outputs.runtime == 'true'
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+        run: |
+          python scripts/prepare_acceptance.py
+          rm -rf build/runtime-wheel
+          python -m pip wheel . --no-deps -w build/runtime-wheel
+
+      - name: Test released SolidCraft stack
+        if: steps.scope.outputs.runtime == 'true'
+        run: |
+          docker run --rm \
+            -e SOLIDCRAFT_RUNTIME_ACCEPTANCE=1 \
+            -e SOLIDCRAFT_CONVERSION_ACCEPTANCE=1 \
+            -e SOLIDCRAFT_TEST_COMMANDS=/repo/build/runtime-fixture/build/solidcraft.json \
+            -e SOLIDCRAFT_ORIGINAL_COMMANDS=/repo/tests/fixtures/existing-box.json \
+            -e SOLIDCRAFT_TRANSLATED_COMMANDS=/repo/build/conversion-fixture/build/translated.json \
+            -v "$PWD:/repo:ro" \
+            -w /repo \
+            ghcr.io/brainboxemb/cad-solidcraft:v0.3.8 \
+            sh -c "python -m venv /tmp/mcp-venv && /tmp/mcp-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/mcp-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_runtime.py tests/test_conversion.py"
