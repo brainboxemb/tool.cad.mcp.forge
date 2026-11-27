@@ -5,6 +5,7 @@ import json
 from fastmcp import Client
 import pytest
 
+from forge_mcp import knowledge
 from forge_mcp.server import mcp
 
 
@@ -51,4 +52,33 @@ def test_real_forge_skill_references():
             assert await read("references/guide/getting-started.html")
             with pytest.raises(Exception, match="Unknown skill reference"):
                 await read("../secret")
+    asyncio.run(run())
+
+
+def test_real_skill_references_do_not_run_git(monkeypatch):
+    if not os.environ.get("FORGE_SOURCE_ROOT"):
+        pytest.fail("Real Forge checkout is required for CI acceptance")
+    monkeypatch.setattr(
+        knowledge,
+        "_git",
+        lambda *args, **kwargs: pytest.fail("skill references must not run Git validation"),
+    )
+
+    async def run():
+        async with Client(mcp) as client:
+            first, second = await asyncio.gather(
+                client.call_tool(
+                    "skill_reference",
+                    {"skill": "forge-modeling", "file": "references/index.json"},
+                ),
+                client.call_tool(
+                    "skill_reference",
+                    {"skill": "solidcraft-control", "file": "references/api.md"},
+                ),
+            )
+            assert not first.is_error
+            assert not second.is_error
+            assert "documents" in first.data["content"]
+            assert "Placement" in second.data["content"]
+
     asyncio.run(run())

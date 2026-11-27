@@ -5,7 +5,7 @@ import os
 from fastmcp import Client
 import pytest
 
-from forge_mcp import compiler
+from forge_mcp import compiler, knowledge
 from forge_mcp.server import mcp
 
 
@@ -45,6 +45,27 @@ def test_real_forge_compile_to_workspace_build(tmp_path, monkeypatch):
 
             read = await client.call_tool("workspace_read", {"path": "build/solidcraft.json"})
             assert read.data["sha256"] == result.data["sha256"]
+    asyncio.run(run())
+
+
+def test_compile_does_not_run_git_validation(tmp_path, monkeypatch):
+    if not os.environ.get("FORGE_SOURCE_ROOT"):
+        pytest.fail("Real Forge checkout is required for compile acceptance")
+    monkeypatch.setenv("FORGE_WORKSPACE_ROOT", str(tmp_path))
+    compiler.set_execution_enabled(True)
+    monkeypatch.setattr(
+        knowledge,
+        "_git",
+        lambda *args, **kwargs: pytest.fail("forge_compile must not run Git validation"),
+    )
+    (tmp_path / "model.py").write_text(MODEL, encoding="utf-8")
+
+    async def run():
+        async with Client(mcp) as client:
+            result = await client.call_tool("forge_compile", {"source_path": "model.py"})
+            assert not result.is_error
+            assert result.data["ok"] is True
+
     asyncio.run(run())
 
 

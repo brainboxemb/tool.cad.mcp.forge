@@ -24,19 +24,32 @@ def _git(root: Path, *args: str) -> str:
 
 
 def source_root() -> Path:
+    """Return configured release-matched Forge knowledge root without Git subprocesses."""
     configured = os.environ.get("FORGE_SOURCE_ROOT")
     if not configured:
         raise KnowledgeError("Set FORGE_SOURCE_ROOT to the supported Forge release checkout")
     root = Path(configured).resolve()
+    if not root.is_dir():
+        raise KnowledgeError("Configured Forge source checkout does not exist")
     try:
         installed = metadata.version("scpf")
     except metadata.PackageNotFoundError as exc:
         raise KnowledgeError("Install scpf from the supported checkout's cadlib directory") from exc
+    if installed != FORGE_VERSION:
+        raise KnowledgeError(
+            f"Forge knowledge requires installed scpf {FORGE_VERSION}"
+        )
+    return root
+
+
+def validate_source_root() -> Path:
+    """Validate exact Forge tag and clean checkout for the explicit doctor gate."""
+    root = source_root()
     head = _git(root, "rev-parse", "HEAD")
     tagged = _git(root, "rev-list", "-n", "1", FORGE_REF)
-    if installed != FORGE_VERSION or head != tagged:
+    if head != tagged:
         raise KnowledgeError(
-            f"Forge knowledge requires scpf {FORGE_VERSION} at tag {FORGE_REF}"
+            f"Forge knowledge requires checkout at tag {FORGE_REF}"
         )
     if _git(root, "status", "--porcelain", "--untracked-files=no"):
         raise KnowledgeError("Forge source checkout has tracked modifications")

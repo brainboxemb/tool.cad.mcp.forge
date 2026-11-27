@@ -39,7 +39,8 @@ def compile_model(source_path: str, output_path: str = "build/solidcraft.json") 
     if not source.is_file() or source.suffix.lower() != ".py":
         raise CompileError("forge_compile source must be an existing Python file")
 
-    # Validate the installed package and its release-matched knowledge checkout.
+    # Per-call compile validates only the configured package/root contract.
+    # Exact Git tag/clean-checkout qualification belongs to the explicit doctor gate.
     knowledge.source_root()
 
     _, output = workspace._resolve(output_path)
