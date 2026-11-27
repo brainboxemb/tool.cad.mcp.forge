@@ -112,8 +112,9 @@ jobs:
             ghcr.io/brainboxemb/cad-solidcraft:v0.3.6 \
             sh -c "python -m venv /tmp/conversion-venv && /tmp/conversion-venv/bin/pip install /repo/build/runtime-wheel/*.whl pytest\>=8,\<9 Pillow\>=10 && /tmp/conversion-venv/bin/python -m pytest -q -p no:cacheprovider tests/test_conversion.py"
 
-      - name: Test shared merge and cleanup policy
+      - name: Test repository policy modules
         run: |
           python -m pip install PyYAML==6.0.2
           PYTHONPATH=modules/merge-policy/src python -m unittest discover -s modules/merge-policy/tests
           PYTHONPATH=modules/branch-cleanup/src python -m unittest discover -s modules/branch-cleanup/tests
+          PYTHONPATH=modules/release/src python -m unittest discover -s modules/release/tests
