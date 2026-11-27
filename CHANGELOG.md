@@ -7,6 +7,25 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.8] - 2026-11-27
+
+### Changed
+
+- Keep `forge-modeling` focused on the maintained `scpf/model.py` authoring
+  contract plus a small set of generic Forge idioms, rather than prescribing
+  geometry recipes for individual models.
+- Clarify `Anchor`, `Faces`, explicit `Sketch` and version-matched
+  `skill_reference` usage for new-model agents.
+- Correct the native `Hole` example: add the hole feature to design history
+  with `+`; the feature itself removes material.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.7] - 2026-11-27
 
 ### Changed
