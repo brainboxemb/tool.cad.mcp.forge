@@ -1,5 +1,6 @@
-# Thin Forge CAD MCP release adapter.
-# Generic tag/GitHub Release publication is owned by released tool.py.lib.ci.
+# Thin repository-local Forge CAD MCP release adapter.
+# Release parsing, validation, tagging and GitHub Release publication are owned
+# by modules/release in this repository.
 
 name: Publish MCP release
 
@@ -11,26 +12,23 @@ permissions:
   contents: read
 
 jobs:
-  check_ci:
+  release:
     if: >-
       !github.event.issue.pull_request &&
       startsWith(github.event.comment.body, '/release ')
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
+      issues: write
       checks: read
-    env:
-      TOOL_ROOT: ${{ github.workspace }}/.tool-py-lib-ci
 
     steps:
-      - name: Check out released Python release tool
+      - name: Check out stable MCP source
         uses: actions/checkout@v7
         with:
-          repository: brainboxemb/tool.py.lib.ci
-          ref: 58ead6897a4ac8cafef22a3c1f834491bf61568d
-          path: .tool-py-lib-ci
+          ref: main
           fetch-depth: 1
-          fetch-tags: false
+          fetch-tags: true
           persist-credentials: false
 
       - name: Set up Python
@@ -38,59 +36,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Parse exact release request
-        id: request
-        shell: bash
-        run: |
-          python "$TOOL_ROOT/scripts/release_command.py" parse \
-            --command "${{ github.event.comment.body }}" \
-            --github-output "$GITHUB_OUTPUT"
-
-      - name: Require successful central CI for exact release SHA
-        shell: bash
+      - name: Publish exact stable release
         env:
           GH_TOKEN: ${{ github.token }}
-          TARGET_SHA: ${{ steps.request.outputs.target_sha }}
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          from urllib import request
-
-          repository = os.environ["GITHUB_REPOSITORY"]
-          sha = os.environ["TARGET_SHA"]
-          req = request.Request(
-              f"https://api.github.com/repos/{repository}/commits/{sha}/check-runs",
-              headers={
-                  "Accept": "application/vnd.github+json",
-                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
-                  "X-GitHub-Api-Version": "2022-11-28",
-              },
-          )
-          with request.urlopen(req) as response:
-              checks = json.load(response).get("check_runs", [])
-
-          central = [check for check in checks if check.get("name") == "ci"]
-          if not central:
-              raise SystemExit("release SHA has no central ci check")
-          newest = max(central, key=lambda check: check.get("id", 0))
-          if newest.get("status") != "completed":
-              raise SystemExit("central ci check is still running")
-          if newest.get("conclusion") != "success":
-              raise SystemExit(
-                  f"central ci check is not successful: {newest.get('conclusion')}"
-              )
-          print(f"qualified release SHA: {sha}")
-          PY
-
-  release:
-    needs: check_ci
-    permissions:
-      contents: write
-      issues: write
-    uses: brainboxemb/tool.py.lib.ci/.github/workflows/reusable-release.yml@58ead6897a4ac8cafef22a3c1f834491bf61568d
-    with:
-      command: ${{ github.event.comment.body }}
-      issue_number: ${{ github.event.issue.number }}
-      stable_ref: main
-      validator_path: release.py
+          PYTHONPATH: modules/release/src
+        run: >-
+          python -m forge_mcp_release
+          --repository "${{ github.repository }}"
+          --command "${{ github.event.comment.body }}"
+          --actor "${{ github.actor }}"
+          --owner "${{ github.repository_owner }}"
+          --issue-number "${{ github.event.issue.number }}"
+          --source-root .
