@@ -66,6 +66,7 @@ sheet metal and SolidCraft-to-Forge.
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
 | #39 | dev | now | Verify packaged operational skills and release-matched references |
+| #41 | dev | next | Add operator bootstrap for the exact supported Forge checkout |
 
 ## Recently completed
 
@@ -90,5 +91,7 @@ sheet metal and SolidCraft-to-Forge.
 
 Finish #39 and verify that a fresh MCP client can discover a task skill, read
 its operational reference and use only real MCP tools/release-matched Forge
-references. Then decide the first version/tag/release packaging from the stable
-`main` baseline. Do not add a Docker distribution merely to publish the MCP.
+references. Then implement #41 so local setup can bootstrap/manage the exact
+Forge checkout without giving that control to the model agent. After those
+gates, decide the first version/tag/release packaging from the stable `main`
+baseline. Do not add a Docker distribution merely to publish the MCP.
