@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.4` from stable
-`main` commit `2502eb7878b030460e5fbbcfca286e3794861960`.
+The qualified local Forge MCP baseline is released as `v0.0.5` from stable
+`main` commit `229953cf16e3a83bf5c6e3791bb4ff15ae31ad07`.
 
 The accepted stack is:
 
@@ -65,11 +65,11 @@ runtime-sensitive PRs, explicit manual `full=true` diagnosis and the exact
 
 ## Active workstreams
 
-### WS1 — consume the v0.0.4 / SolidCraft 0.50 baseline
+### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.4 is published. The remaining checkpoint is to update the workspace
-template/concrete workspace pins and rerun the real Windows standalone
-workbench acceptance against the released stack.
+MCP v0.0.5 is published and consumed by the template/concrete workspace. Real
+Windows Codex acceptance proved `environment` and `workspace_status`, then exposed
+per-call Git validation in `skill_reference`; issue #91 is the current blocker.
 
 ### WS2 — Forge compatibility evolution
 
@@ -82,7 +82,8 @@ edits.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #88 | MCP CI | now | Keep version-only release metadata PRs out of released-stack acceptance |
+| #91 | MCP | now | Remove per-call Forge Git validation from knowledge/reference and compile calls |
+| #88 | MCP CI | complete | Version-only release metadata PRs skip released-stack acceptance |
 | #84 | MCP | complete | Initial MCP status probes are subprocess-free and read-only tools are annotated |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
@@ -104,8 +105,8 @@ edits.
 
 ## Next checkpoint
 
-Update the workspace template and concrete workspace to MCP v0.0.4, then rerun
-the real Windows standalone-workbench `doctor` and the 60 x 20 x 4 mm /
+Publish the #91 knowledge/compile latency fix as the next MCP patch, update the
+workspace pins, then resume the already-started Windows 60 x 20 x 4 mm /
 diameter-8 live SolidCraft demo.
 
 After that checkpoint, continue broad MCP product work from the current issue

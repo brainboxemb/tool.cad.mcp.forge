@@ -24,7 +24,7 @@ def doctor(*, include_paths: bool = False) -> dict:
     }
 
     try:
-        root = knowledge.source_root()
+        root = knowledge.validate_source_root()
         result["forge"]["ready"] = True
         result["forge"]["version"] = metadata.version("scpf")
         if include_paths:

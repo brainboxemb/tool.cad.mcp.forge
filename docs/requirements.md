@@ -11,7 +11,7 @@
 - Before remote deployment, authenticate clients, isolate generated Python execution and restrict each client's workspace. Transport tests do not prove workspace isolation.
 - Qualify through real MCP client tests and real runtime integration tests.
 
-- Knowledge queries use only a locally configured release-matched Forge checkout and installed scpf; no per-query network requests.
+- Knowledge queries use only a locally configured Forge checkout and installed release-matched scpf; no per-query network or Git subprocess validation is performed. Exact tag/clean-checkout validation belongs to the explicit doctor gate.
 - Expose task-oriented SKILL.md entrypoints via skill discovery and skill_reference. Provide explicit references to release-matched API signatures, docstrings, guides, cheatsheet and example source, with explicit errors for unsupported paths or mismatched releases.
 - Local stdio installation must remain possible without a new MCP Docker image.
 - A conversion skill must teach analysis of existing .sc designs and optional JSON exports, preserving original files and distinguishing observed model data from inferred modeling intent. Actual runtime conversion acceptance belongs to #5.
@@ -21,7 +21,7 @@
 - MCP source editing writes only .py files. Existing source replacement requires the exact SHA-256 returned by workspace_read. Native .sc, JSON, metadata and docs are read-only through the editor.
 - The supported HTTP bootstrap transport exposes no workspace writes; writable remote work requires authentication and per-client isolation first.
 
-- forge_compile accepts only an existing workspace .py source, validates the configured Forge release, and writes command JSON only below build/.
+- forge_compile accepts only an existing workspace .py source, validates the configured release-matched scpf/root contract without Git subprocesses, and writes command JSON only below build/. Exact checkout qualification belongs to doctor.
 - Compilation invokes the supported scpf module directly without a shell. Compile failures return bounded structured stdout/stderr and remove stale output.
 - Python model execution is enabled only for the trusted local stdio transport; the HTTP bootstrap may not compile generated Python.
 
