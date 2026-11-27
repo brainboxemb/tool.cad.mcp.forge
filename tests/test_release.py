@@ -71,7 +71,7 @@ def test_release_workflow_delegates_publication_and_gates_ci():
     assert "startsWith(github.event.comment.body, '/release ')" in workflow
     assert "commits/{sha}/check-runs" in workflow
     assert 'check.get("name") == "ci"' in workflow
-    assert 'check.get("conclusion") != "success"' in workflow
+    assert 'newest.get("conclusion") != "success"' in workflow
     assert (
         "brainboxemb/tool.py.lib.ci/.github/workflows/"
         "reusable-release.yml@58ead6897a4ac8cafef22a3c1f834491bf61568d"
