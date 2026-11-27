@@ -119,6 +119,10 @@ FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
 
 CI reuses `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6` for real SolidCraft 0.49.0 acceptance rather than publishing another runtime image.
 
+Releases are published from qualified stable `main` through the governed
+procedure in [docs/release.md](docs/release.md); normal release tags are not
+created manually.
+
 See `docs/plan.md` for unfinished work.
 
 

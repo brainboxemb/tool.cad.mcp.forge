@@ -53,11 +53,18 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ## Active workstreams
 
-No implementation work is active after the stable target/dependency promotion.
+### WS1 — governed first MCP release
+
+Issue #43 adds the repository release adapter, package/changelog validator and
+release procedure. Publication must stay owner-issued, use qualified stable
+`main`, require the exact SHA's central CI check and delegate generic
+tag/GitHub Release creation to released `tool.py.lib.ci`.
 
 ## Open issue assignment
 
-No unfinished implementation work is assigned.
+| Issue | Lane/owner | Status | Next action |
+| --- | --- | --- | --- |
+| #43 | MCP `dev` -> `main` | now | Integrate the governed release workflow, then publish `v0.0.1` from qualified `main` |
 
 ## Recently completed
 
@@ -80,5 +87,9 @@ No unfinished implementation work is assigned.
 
 ## Next checkpoint
 
-Decide the first version/tag/release packaging from the stable `main` baseline.
+Publish `v0.0.1` through the governed release workflow from the exact
+qualified `main` head. After that, update the supported Forge baseline in a
+separate compatibility change; do not combine the Forge 0.24 adoption with the
+first MCP release transaction.
+
 Do not add a Docker distribution merely to publish the MCP.
