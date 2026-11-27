@@ -22,6 +22,17 @@ def test_skill_entrypoints_without_forge(monkeypatch):
             for name in ("forge-modeling", "solidcraft-to-forge", "solidcraft-control"):
                 result = await client.call_tool("skill_reference", {"skill": name, "file": "SKILL.md"})
                 assert result.data["content"].startswith("---")
+            modeling = await client.call_tool(
+                "skill_reference", {"skill": "forge-modeling", "file": "SKILL.md"}
+            )
+            content = modeling.data["content"]
+            assert "Starting a new `scpf/model.py`" in content
+            assert "class Plate:" in content
+            assert "from scpf import Anchor, Box" in content
+            assert "def build(self):" in content
+            assert "Plate()" in content
+            assert "lower-case numeric class fields" in content
+            assert "solidcraft-control" in content
             with pytest.raises(Exception, match="FORGE_SOURCE_ROOT"):
                 await client.call_tool("skill_reference", {"skill": "forge-modeling", "file": "references/index.json"})
     asyncio.run(run())

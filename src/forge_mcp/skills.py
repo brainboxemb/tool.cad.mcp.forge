@@ -6,7 +6,7 @@ import re
 from . import knowledge
 
 _SKILLS = {
-    "forge-modeling": "Author maintainable Python Forge models using the installed release.",
+    "forge-modeling": "Build a new maintainable Python Forge model from scpf/model.py using the installed release.",
     "solidcraft-to-forge": "Understand an existing native SolidCraft design and translate it into verified Forge Python.",
     "solidcraft-control": "Operate and inspect the running SolidCraft GUI through the authenticated control channel.",
 }
