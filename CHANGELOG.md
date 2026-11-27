@@ -7,6 +7,8 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.3] - 2026-11-27
+
 ### Added
 
 - Add authenticated live SolidCraft GUI control for trusted local stdio
@@ -18,6 +20,12 @@ compatibility are qualified separately and documented for each release.
 - Add optional local `project.yml` workbench configuration plus bounded
   `build/session.jsonl` action/evidence logging with render/replay hashes.
 
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.49.0 through the qualified CAD runtime image and authenticated
+  local GUI control channel.
+- Python 3.11+.
 
 ## [0.0.2] - 2026-11-27
 
