@@ -56,7 +56,7 @@ The configured target owner is authoritative. AI workflows must not discover or
 switch target owners implicitly. Catalog dependency access is exact-path and
 read-only; it exists only to support reuse by assemblies/subassemblies.
 
-Development-cycle cost is architectural. Normal PRs use one qualification path.
+Development-cycle cost is architectural. Normal PRs use one CI path.
 Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
 sensitive PRs use at most one released CAD runtime container. Ordinary
 `main` pushes run fast CI only. Complete released-stack acceptance belongs to
