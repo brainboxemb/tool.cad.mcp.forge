@@ -40,11 +40,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PYTHONPATH: modules/release/src
-        run: >-
-          python -m forge_mcp_release
-          --repository "${{ github.repository }}"
-          --command "${{ github.event.comment.body }}"
-          --actor "${{ github.actor }}"
-          --owner "${{ github.repository_owner }}"
-          --issue-number "${{ github.event.issue.number }}"
-          --source-root .
+          RELEASE_REPOSITORY: ${{ github.repository }}
+          RELEASE_COMMAND: ${{ github.event.comment.body }}
+          RELEASE_ACTOR: ${{ github.actor }}
+          RELEASE_OWNER: ${{ github.repository_owner }}
+          RELEASE_ISSUE: ${{ github.event.issue.number }}
+        run: |
+          python -m forge_mcp_release \
+            --repository "$RELEASE_REPOSITORY" \
+            --command "$RELEASE_COMMAND" \
+            --actor "$RELEASE_ACTOR" \
+            --owner "$RELEASE_OWNER" \
+            --issue-number "$RELEASE_ISSUE" \
+            --source-root .
