@@ -7,6 +7,25 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.7] - 2026-11-27
+
+### Changed
+
+- Make `forge-modeling` the explicit new-model skill for starting a
+  maintainable `scpf/model.py`.
+- Document the root model contract, parameter naming rules and the
+  `build()` / explicit root-instance pattern.
+- Add qualified worked examples for a basic plate and a centred through-hole.
+- Compile the Python examples from the bundled skill in package CI so skill
+  examples cannot silently drift from Forge/SCPF 0.25.0.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.6] - 2026-11-27
 
 ### Changed
