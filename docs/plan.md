@@ -4,30 +4,24 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.2` from stable
-`main` commit `3d09d3f2b0b6ff4aab832a56a827b31513753b99`. Release workflow
-run `46032398960` succeeded after stable main qualification.
+The qualified local Forge MCP baseline is released as `v0.0.3` from stable
+`main`. It includes authenticated live SolidCraft GUI/workbench control.
 
 The stable baseline includes:
 
 - FastMCP 2.14.7 with stdio as the normal local client transport;
 - Forge/SCPF 0.25.0 at the exact supported release checkout;
-- SolidCraft 0.49.0, accepted through
-  `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6`;
-- skills-first authoring through `forge-modeling` and
+- SolidCraft 0.49.0 through the then-qualified CAD runtime;
+- skills-first authoring through `forge-modeling`, `solidcraft-control` and
   `solidcraft-to-forge`;
-- a three-checkout local setup: Forge MCP, exact Forge release and CAD library;
-- one explicit target owner inside the CAD library as the only writable
-  workspace/build/runtime scope;
-- exact read-only dependency-owner access for assemblies/subassemblies;
-- Forge compilation with the configured CAD-library root available for existing
-  `from models...` imports;
-- Forge Python -> SolidCraft command JSON compilation;
-- SolidCraft replay, compact native analysis, component inspection and PNG
-  rendering through MCP;
+- standalone workbench and exact catalog-owner bindings;
+- Forge compile plus live SolidCraft apply/inspect/native command/view/render;
+- headless SolidCraft replay, evaluation, component inspection and PNG
+  evidence;
+- bounded `project.yml` workbench configuration and JSONL live-session
+  evidence;
 - independent existing-SolidCraft -> Forge workflow acceptance;
-- explicit local startup arguments and a non-CAD `doctor` readiness gate;
-- a Windows + VS Code + Conda setup guide matching the stable configuration.
+- explicit local startup arguments and a non-CAD `doctor` readiness gate.
 
 Local model iteration is independent of GitHub after setup. No MCP-specific
 Docker image is required.
@@ -52,21 +46,18 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ## Active workstreams
 
-### WS1 — live SolidCraft workbench control
+### WS1 — SolidCraft 0.50 runtime adoption
 
-The next MCP capability extends the trusted local stdio workflow from
-headless/file-oriented SolidCraft evidence to deliberate control of the running
-SolidCraft GUI through Forge's existing authenticated `scpf.live` control
-client. The MCP must keep Forge authoring and SolidCraft control distinct while
-letting one workbench session compile/apply Forge source, inspect the active
-design, run native SolidCraft commands, change parameters/views and capture
-live evidence.
+Issue #62 moves the exact SolidCraft baseline to released runtime v0.3.8 /
+SolidCraft 0.50.0 while keeping Forge/SCPF v0.25.0 and the v0.0.3 live-control
+surface unchanged. The Windows workbench acceptance is currently blocked only
+by MCP v0.0.3 still requiring SolidCraft 0.49.0.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #56 | MCP `dev` | now | Add bounded live SolidCraft GUI tools, session evidence logging and the SolidCraft-control skill |
+| #62 | MCP `dev` | now | Qualify SolidCraft 0.50.0 / runtime v0.3.8 and publish MCP v0.0.4 |
 
 ## Recently completed
 
@@ -92,12 +83,18 @@ live evidence.
 - #48 published and verified the first MCP release, `v0.0.1`.
 - #49 qualified Forge/SCPF `v0.25.0`, promoted it to stable `main`, and
   published MCP `v0.0.2`.
+- #56 added bounded live SolidCraft GUI control, workbench evidence logging and
+  the `solidcraft-control` skill; it was released as MCP `v0.0.3`.
+- #63 synchronized the stable v0.0.3 release metadata back to permanent
+  `dev` without copying the promotion merge commit.
 
 ## Next checkpoint
 
-Add and qualify live SolidCraft workbench control against the existing
-Forge/SCPF `v0.25.0` + SolidCraft `0.49.0` baseline, then publish the next
-MCP release and update the workspace template/consumer pins. The first operator
-demo is a standalone local workbench, not a catalog model.
+Qualify issue #62 against released CAD runtime `v0.3.8`, promote it to stable
+`main`, publish MCP `v0.0.4`, and update the workspace template/concrete
+workspace pins. Then rerun the real Windows standalone-workbench doctor and
+60 × 20 × 4 mm / Ø8 live SolidCraft demo.
 
-Do not add a Docker distribution merely to publish the MCP.
+Do not weaken the exact-version doctor check and do not require the user to
+downgrade SolidCraft.
+
