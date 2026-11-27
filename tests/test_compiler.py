@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import subprocess
 
 from fastmcp import Client
 import pytest
@@ -18,6 +19,26 @@ MODEL = """class CompileBox:
         return Box(self.length, self.width, self.height, anchor=Anchor.BOTTOM)
 
 CompileBox()
+"""
+
+
+HOLE_MODEL = """class CompilePlate:
+    length = 60.0
+    width = 20.0
+    thickness = 4.0
+    hole_diameter = 8.0
+
+    def build(self):
+        plate = Box(
+            self.length,
+            self.width,
+            self.thickness,
+            anchor=Anchor.BOTTOM,
+        )
+        hole = Hole(d=self.hole_diameter, depth=Depth.THROUGH_ALL)
+        return plate + hole.on(plate, face=Faces.TOP)
+
+CompilePlate()
 """
 
 
@@ -46,6 +67,59 @@ def test_real_forge_compile_to_workspace_build(tmp_path, monkeypatch):
             read = await client.call_tool("workspace_read", {"path": "build/solidcraft.json"})
             assert read.data["sha256"] == result.data["sha256"]
     asyncio.run(run())
+
+
+def test_real_forge_compile_native_hole_to_workspace_build(tmp_path, monkeypatch):
+    if not os.environ.get("FORGE_SOURCE_ROOT"):
+        pytest.fail("Real Forge checkout is required for compile acceptance")
+    monkeypatch.setenv("FORGE_WORKSPACE_ROOT", str(tmp_path))
+    compiler.set_execution_enabled(True)
+    (tmp_path / "source").mkdir()
+    (tmp_path / "source" / "model.py").write_text(HOLE_MODEL, encoding="utf-8")
+
+    async def run():
+        async with Client(mcp) as client:
+            result = await client.call_tool(
+                "forge_compile",
+                {"source_path": "source/model.py", "output_path": "build/hole.json"},
+            )
+            assert not result.is_error
+            assert result.data["ok"] is True
+            output = tmp_path / "build" / "hole.json"
+            document = json.loads(output.read_text(encoding="utf-8"))
+            commands = [row["command"] for row in document["commands"]]
+            assert "solid.hole" in commands
+
+    asyncio.run(run())
+
+
+def test_compile_child_does_not_inherit_server_stdin(tmp_path, monkeypatch):
+    monkeypatch.setenv("FORGE_WORKSPACE_ROOT", str(tmp_path))
+    compiler.set_execution_enabled(True)
+    monkeypatch.setattr(knowledge, "source_root", lambda: tmp_path)
+    (tmp_path / "model.py").write_text(MODEL, encoding="utf-8")
+    observed = {}
+
+    def fake_run(command, **kwargs):
+        observed.update(kwargs)
+        output = tmp_path / "build" / "solidcraft.json"
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_text(
+            json.dumps({
+                "version": 2,
+                "commands": [{"command": "document.create", "params": {}}],
+            }),
+            encoding="utf-8",
+        )
+        return subprocess.CompletedProcess(
+            command, 0, stdout="compiled\n", stderr=""
+        )
+
+    monkeypatch.setattr(compiler.subprocess, "run", fake_run)
+    result = compiler.compile_model("model.py")
+
+    assert result["ok"] is True
+    assert observed["stdin"] == subprocess.DEVNULL
 
 
 def test_compile_does_not_run_git_validation(tmp_path, monkeypatch):
