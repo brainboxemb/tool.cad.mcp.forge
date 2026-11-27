@@ -17,7 +17,15 @@ from forge_mcp.server import mcp
 async def check(client):
     async with client:
         tools = await client.list_tools()
-        assert {"environment", "diagnostic_image"} <= {tool.name for tool in tools}
+        assert {
+            "environment",
+            "diagnostic_image",
+            "forge_live",
+            "solidcraft_live_new",
+            "solidcraft_live_execute",
+            "solidcraft_live_inspect",
+            "solidcraft_live_render",
+        } <= {tool.name for tool in tools}
         result = await client.call_tool("environment", {})
         assert not result.is_error
         assert isinstance(result.data["cad_ready"], bool)
