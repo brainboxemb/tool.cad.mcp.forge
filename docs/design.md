@@ -87,10 +87,7 @@ packaging, runtime adapters or acceptance fixtures run the complete headless
 released-stack acceptance. Documentation and repository-policy-only pull
 requests do not start SolidCraft.
 
-An ordinary push to `main` runs the fast central CI only. `/merge` does not
-dispatch CI after integration; the normal `push: main` trigger owns the single
-automatic post-merge check. Manual CI is fast by default and runs full
-released-stack acceptance only when `full=true` is selected.
+`/merge` performs its GitHub API merge with the Actions token. That merge does\nnot create a follow-on `push` workflow run, so `/merge` explicitly dispatches\n`ci.yml` for the new `main` SHA with `full=false`. This fast post-merge check\ncreates the exact `main` CI record required by the release gate without\nstarting SolidCraft. Direct `main` pushes are also fast-only. Manual CI is fast\nby default and runs full released-stack acceptance only when `full=true` is\nselected.
 
 `modules/release` owns the release transaction. Before publication it verifies
 the exact requested current `main` SHA and green central CI, installs the

@@ -61,9 +61,7 @@ Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
 sensitive PRs use at most one released CAD runtime container. Ordinary
 `main` pushes run fast CI only. Complete released-stack acceptance belongs to
 runtime-sensitive PRs, explicit manual `full=true` diagnosis and the exact
-`/release` transaction, never to every merged main SHA. `/merge` never
-redispatches central CI after integration; the normal `push: main` check is the
-only automatic post-merge CI run.
+`/release` transaction, never to every merged main SHA. `/merge` dispatches one\nexplicit fast `ci.yml` run with `full=false` after integration because its\nActions-token API merge does not trigger a push workflow. That fast run exists\nonly to create the exact `main` CI record required by release.
 
 ## Active workstreams
 

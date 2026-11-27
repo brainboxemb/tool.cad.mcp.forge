@@ -55,20 +55,13 @@ def require_green_ci(
     if not ci_checks:
         raise MergePolicyError("pull request has no central ci check")
 
-    pending = [
-        check
-        for check in ci_checks
-        if check.get("status") != "completed"
-    ]
-    if pending:
+    if any(check.get("status") != "completed" for check in ci_checks):
         raise MergePolicyError("central ci check is still running")
 
-    failed = [
-        check
+    if any(
+        check.get("conclusion") not in _ALLOWED_CI_RESULTS
         for check in ci_checks
-        if check.get("conclusion") not in _ALLOWED_CI_RESULTS
-    ]
-    if failed:
+    ):
         raise MergePolicyError("central ci check is not green")
 
 
@@ -80,13 +73,23 @@ def merge_required(pr: dict) -> bool:
     return True
 
 
-def dispatch_workflow(repository: str, workflow: str, ref: str, token: str) -> None:
+def dispatch_workflow(
+    repository: str,
+    workflow: str,
+    ref: str,
+    token: str,
+    *,
+    inputs: dict[str, str] | None = None,
+) -> None:
+    body = {"ref": ref}
+    if inputs is not None:
+        body["inputs"] = inputs
     api(
         repository,
         f"actions/workflows/{workflow}/dispatches",
         token,
         method="POST",
-        body={"ref": ref},
+        body=body,
     )
 
 
@@ -95,8 +98,15 @@ def dispatch_post_merge_workflows(
     base: str,
     token: str,
 ) -> None:
-    """Dispatch only cleanup; CI is triggered naturally by the main push."""
+    """Create the fast main CI record required by release, then sweep branches."""
 
+    dispatch_workflow(
+        repository,
+        "ci.yml",
+        base,
+        token,
+        inputs={"full": "false"},
+    )
     dispatch_workflow(repository, "branch-cleanup.yml", base, token)
 
 
