@@ -26,9 +26,28 @@ async def check(client):
             "solidcraft_live_inspect",
             "solidcraft_live_render",
         } <= {tool.name for tool in tools}
+        tool_map = {tool.name: tool for tool in tools}
+        for name in (
+            "environment",
+            "diagnostic_image",
+            "skill_list",
+            "skill_reference",
+            "workspace_status",
+            "workspace_list",
+            "workspace_read",
+            "catalog_dependency_list",
+            "catalog_dependency_read",
+            "model_input_summary",
+        ):
+            assert tool_map[name].annotations is not None
+            assert tool_map[name].annotations.readOnlyHint is True
+
         result = await client.call_tool("environment", {})
         assert not result.is_error
         assert isinstance(result.data["cad_ready"], bool)
+        assert result.data["readiness"]["verification"].startswith(
+            "run forge-cad-mcp doctor"
+        )
         image = await client.call_tool("diagnostic_image", {})
         assert not image.is_error
         block = next(item for item in image.content if isinstance(item, ImageContent))
