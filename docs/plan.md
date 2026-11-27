@@ -60,8 +60,10 @@ Development-cycle cost is architectural. Normal PRs use one qualification path.
 Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
 sensitive PRs use at most one released CAD runtime container. Ordinary
 `main` pushes run fast CI only. Complete released-stack acceptance belongs to
-runtime-sensitive PRs, explicit manual diagnosis and the exact `/release`
-transaction, never to every merged main SHA.
+runtime-sensitive PRs, explicit manual `full=true` diagnosis and the exact
+`/release` transaction, never to every merged main SHA. `/merge` never
+redispatches central CI after integration; the normal `push: main` check is the
+only automatic post-merge CI run.
 
 ## Active workstreams
 

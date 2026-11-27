@@ -6,6 +6,12 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      full:
+        description: Run released SolidCraft stack acceptance
+        required: false
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -38,11 +44,13 @@ jobs:
           CI_EVENT_NAME: ${{ github.event_name }}
           CI_BASE_SHA: ${{ github.event.pull_request.base.sha }}
           CI_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          CI_MANUAL_FULL: ${{ inputs.full }}
         run: >-
           python scripts/ci_scope.py
           --event "$CI_EVENT_NAME"
           --base "$CI_BASE_SHA"
           --head "$CI_HEAD_SHA"
+          --manual-full "$CI_MANUAL_FULL"
           --github-output "$GITHUB_OUTPUT"
 
       - name: Test repository policy modules

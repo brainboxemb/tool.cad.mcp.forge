@@ -55,14 +55,23 @@ def changed_paths(base: str, head: str) -> tuple[str, ...]:
     return tuple(path for path in result.stdout.splitlines() if path.strip())
 
 
-def runtime_for_event(event: str, paths: Iterable[str] = ()) -> bool:
-    """PRs are path-sensitive; only explicit manual CI is full outside PRs."""
+def runtime_for_event(
+    event: str,
+    paths: Iterable[str] = (),
+    *,
+    manual_full: bool = False,
+) -> bool:
+    """PRs are path-sensitive; post-merge pushes and default dispatches are fast."""
 
     if event == "pull_request":
         return runtime_required(paths)
     if event == "workflow_dispatch":
-        return True
+        return manual_full
     return False
+
+
+def _bool(value: str) -> bool:
+    return value.strip().lower() == "true"
 
 
 def main() -> None:
@@ -70,11 +79,16 @@ def main() -> None:
     parser.add_argument("--event", required=True)
     parser.add_argument("--base", default="")
     parser.add_argument("--head", default="")
+    parser.add_argument("--manual-full", default="false")
     parser.add_argument("--github-output", type=Path)
     args = parser.parse_args()
 
     paths = changed_paths(args.base, args.head) if args.event == "pull_request" else ()
-    required = runtime_for_event(args.event, paths)
+    required = runtime_for_event(
+        args.event,
+        paths,
+        manual_full=_bool(args.manual_full),
+    )
 
     print(f"released_stack_acceptance={'required' if required else 'skipped'}")
     for path in paths:

@@ -31,9 +31,13 @@ def test_runtime_package_and_acceptance_changes_require_released_stack():
         assert runtime_required([path]), path
 
 
-def test_main_push_skips_released_stack_but_manual_ci_is_full():
+def test_main_push_and_default_manual_dispatch_skip_released_stack():
     assert not runtime_for_event("push")
-    assert runtime_for_event("workflow_dispatch")
+    assert not runtime_for_event("workflow_dispatch")
+
+
+def test_explicit_manual_full_dispatch_runs_released_stack():
+    assert runtime_for_event("workflow_dispatch", manual_full=True)
 
 
 def test_pull_request_scope_uses_changed_paths():

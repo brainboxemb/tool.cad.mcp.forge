@@ -90,8 +90,10 @@ package, packaging, Forge compilation/runtime acceptance tests, acceptance
 fixtures or the central CI workflow require released-stack acceptance.
 Documentation and repository-policy-only pull requests do not start SolidCraft.
 Ordinary pushes to stable `main` run the fast central CI only; they never
-start SolidCraft merely because a PR was merged. An explicit manual CI dispatch
-can request full released-stack acceptance for diagnosis. Normal release
+start SolidCraft merely because a PR was merged. The `/merge` policy does not
+dispatch central CI after merge; the normal `push: main` trigger owns that
+post-merge check. A manual CI dispatch is fast by default and runs full
+released-stack acceptance only when its explicit `full=true` input is selected. Normal release
 publication owns the stable full-stack gate: the `/release` workflow first
 validates that its local checkout is the exact requested current `main` SHA
 with green central CI, then runs the complete released-stack acceptance before
@@ -111,7 +113,7 @@ The structural CI performance budget is deterministic:
 - documentation/repository-policy-only PR: zero SolidCraft container starts;
 - runtime-sensitive PR: at most one SolidCraft container start;
 - ordinary stable `main` push: zero SolidCraft container starts;
-- explicit manual full CI: exactly one SolidCraft container start;
+- default manual CI: zero SolidCraft container starts;\n- explicit manual `full=true` CI: exactly one SolidCraft container start;
 - `/release` for the exact current stable SHA: exactly one SolidCraft
   container start before publication;
 - one MCP wheel and one container virtual-environment install serve both real
