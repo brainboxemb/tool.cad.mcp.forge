@@ -55,16 +55,16 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ### WS1 — governed first MCP release
 
-Issue #43 adds the repository release adapter, package/changelog validator and
-release procedure. Publication must stay owner-issued, use qualified stable
-`main`, require the exact SHA's central CI check and delegate generic
-tag/GitHub Release creation to released `tool.py.lib.ci`.
+Issue #45 replaces the initial #43 adapter with repository-local release
+ownership. `modules/release` owns request parsing, package/changelog
+validation, stable-main/CI gates, annotated tag creation and GitHub Release
+publication. The thin workflow only supplies GitHub event context and token.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #43 | MCP `dev` -> `main` | now | Integrate the governed release workflow, then publish `v0.0.1` from qualified `main` |
+| #45 | MCP `dev` -> `main` | now | Integrate the local release capability, promote it to stable `main`, then publish `v0.0.1` |
 
 ## Recently completed
 
@@ -84,6 +84,8 @@ tag/GitHub Release creation to released `tool.py.lib.ci`.
 - #26 explicit writable target owner plus read-only CAD-library dependency
   access.
 - #35 qualified stable promotion of the target/dependency baseline.
+- #43 initial governed release adapter; superseded by #45 before stable promotion
+  because publication ownership must remain repository-local.
 
 ## Next checkpoint
 
