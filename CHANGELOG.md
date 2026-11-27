@@ -7,6 +7,23 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.9] - 2026-11-27
+
+### Fixed
+
+- Isolate Forge compiler subprocess stdin from the MCP stdio protocol stream so
+  real Windows `forge_compile` / `forge_live` calls cannot inherit the server's
+  protocol input handle and stall until the bounded compile timeout.
+- Add released-Forge regression coverage for the 60 × 20 × 4 mm plate with a
+  centered Ø8 through-hole authoring path.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.8] - 2026-11-27
 
 ### Changed
