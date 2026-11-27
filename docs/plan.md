@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The latest published MCP release is `v0.0.3`. Current `main` is prepared as
-`0.0.4` and contains the qualified SolidCraft 0.50.0 baseline from issue #62.
+The qualified local Forge MCP baseline is released as `v0.0.4` from stable
+`main` commit `2502eb7878b030460e5fbbcfca286e3794861960`.
 
 The accepted stack is:
 
@@ -56,27 +56,25 @@ The configured target owner is authoritative. AI workflows must not discover or
 switch target owners implicitly. Catalog dependency access is exact-path and
 read-only; it exists only to support reuse by assemblies/subassemblies.
 
-Development-cycle cost is architectural: a normal source change should require
-one PR qualification path, not a second permanent-lane promotion of the same
-content. Expensive CAD/runtime acceptance is a separate CI-design concern and
-must be simplified independently.
+Development-cycle cost is architectural. Normal PRs use one qualification path.
+Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
+sensitive PRs use at most one released CAD runtime container; every stable
+`main` SHA receives complete released-stack acceptance.
 
 ## Active workstreams
 
-### WS1 — publish and consume the 0.50 baseline
+### WS1 — consume the v0.0.4 / SolidCraft 0.50 baseline
 
-The SolidCraft 0.50.0 source/runtime compatibility change is on `main` as
-package version 0.0.4. The remaining checkpoint is publication of v0.0.4,
-workspace/template pin updates and the real Windows standalone-workbench
-acceptance.
+MCP v0.0.4 is published. The remaining checkpoint is to update the workspace
+template/concrete workspace pins and rerun the real Windows standalone
+workbench acceptance against the released stack.
 
-### WS2 — CI feedback-loop cleanup
+### WS2 — Forge compatibility evolution
 
-Issue #75 replaces the serial always-expensive PR path with one stable `ci`
-gate that runs fast policy/package tests first and conditionally runs real
-SolidCraft acceptance. Runtime and conversion acceptance share one released CAD
-runtime container and one virtual environment. Stable `main` still receives
-the complete released-stack acceptance on every push.
+Issue #53 remains the next MCP-owned compatibility task after the workspace
+checkpoint: define a versioned Forge compatibility catalog and a repeatable
+Forge upgrade procedure instead of treating dependency upgrades as ad-hoc
+edits.
 
 ## Open issue assignment
 
@@ -84,31 +82,27 @@ the complete released-stack acceptance on every push.
 | --- | --- | --- | --- |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
-| #41 | MCP | effectively complete but still open | Close after confirming the accepted explicit workspace/toolchain contract covers the requested behavior |
-| #42 | external workspace owner | probably obsolete here | Track workspace-template work in its owning repository rather than this MCP repository |
-| #43 | MCP | effectively complete but still open | Close; superseded by repository-local release issue #45 |
-| #45 | MCP | effectively complete but still open | Close; repository-local release capability is already accepted |
-| #54 | MCP | effectively complete but still open | Close; v0.0.2 plan reconciliation was merged in PR #55 |
-| #62 | MCP | effectively complete but still open | Close after v0.0.4 publication checkpoint is recorded |
-| #63 | MCP | effectively complete but still open | Close; v0.0.3 release metadata was synchronized in PR #64 |
+| #41 | MCP | effectively complete | Confirm the accepted explicit workspace/toolchain contract covers the requested behavior, then close |
+| #42 | external workspace owner | move out | Track workspace-template work in its owning repository rather than this MCP repository |
 
 ## Recently completed
 
 - #49 qualified Forge/SCPF v0.25.0 and published MCP v0.0.2.
 - #56 added bounded live SolidCraft GUI control and was released as MCP v0.0.3.
-- #62 qualified SolidCraft 0.50.0 / CAD runtime v0.3.8 and placed the 0.0.4
-  source baseline on `main`.
-- #70 removes the unnecessary permanent dev/promotion lane and makes `main`
-  the single integration branch.
-- #75 makes released-stack CI path-sensitive on pull requests, removes inline
-  model heredocs and batches runtime plus conversion acceptance into one
-  SolidCraft container/venv setup.
+- #62 qualified SolidCraft 0.50.0 / CAD runtime v0.3.8.
+- #70 removed the permanent dev/promotion lane and made `main` the single
+  integration branch.
+- #75 made PR CI path-sensitive, moved acceptance fixtures out of workflow
+  heredocs and batched runtime plus conversion acceptance into one SolidCraft
+  container/venv setup.
+- #77 published MCP v0.0.4 from qualified stable `main`.
 
-## Next release/checkpoint
+## Next checkpoint
 
-Publish MCP v0.0.4 from qualified `main`, update the workspace
-template/concrete workspace pins, and rerun the real Windows standalone
-workbench doctor plus the 60 x 20 x 4 mm / diameter-8 live SolidCraft demo.
+Update the workspace template and concrete workspace to MCP v0.0.4, then rerun
+the real Windows standalone-workbench `doctor` and the 60 x 20 x 4 mm /
+diameter-8 live SolidCraft demo.
 
-With the branch lifecycle and CI feedback loop simplified, broad product work
-may continue after the v0.0.4 publication/workspace checkpoint.
+After that checkpoint, continue broad MCP product work from the current issue
+order without reintroducing a permanent promotion lane or always-expensive PR
+runtime acceptance.
