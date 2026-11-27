@@ -64,6 +64,7 @@ def compile_model(source_path: str, output_path: str = "build/solidcraft.json") 
         result = subprocess.run(
             command,
             cwd=root,
+            stdin=subprocess.DEVNULL,
             capture_output=True,
             text=True,
             timeout=COMPILE_TIMEOUT_SECONDS,

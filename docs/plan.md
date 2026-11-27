@@ -76,8 +76,11 @@ release-matched knowledge access and the generated workbench skill router.
 `forge-modeling` now teaches the minimal `scpf/model.py` contract plus generic
 Forge idioms without prescribing model-specific geometry, and its native
 `Hole` example follows the qualified additive feature-history semantics. The
-current gate is to resume the 60 × 20 × 4 mm / Ø8 live SolidCraft
-apply/inspect/mutate/view/render demo.
+current gate is issue #109: the 60 × 20 × 4 mm / Ø8 acceptance proved
+that direct SCPF compile (~0.395 s) and direct `compiler.compile_model()`
+(~0.650 s) are healthy, while the same compile times out only through the real
+MCP stdio tool-call. Fix that stdio child-process boundary, then resume the
+live SolidCraft apply/inspect/mutate/view/render demo.
 
 ### WS2 — Forge compatibility evolution
 
@@ -90,6 +93,7 @@ edits.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
+| #109 | MCP | active WS1 gate | Isolate the Forge compiler child from MCP stdio and restore real Windows `forge_compile`/`forge_live` |
 | #95 | MCP/Forge docs | after acceptance | Align SolidCraft command knowledge with the qualified 0.50.0 runtime without silently relabeling 0.49 docs |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
@@ -121,8 +125,8 @@ edits.
 
 ## Next checkpoint
 
-Resume the already-started Windows 60 × 20 × 4 mm / Ø8 live SolidCraft demo
-against workspace-pinned MCP v0.0.8. Treat #95 as a separate documentation
+Complete #109 and then resume the already-started Windows 60 × 20 × 4 mm / Ø8
+live SolidCraft demo against the next workspace-pinned MCP release. Treat #95 as a separate documentation
 alignment task unless the live engine exposes an actual 0.50 command mismatch.
 
 After that checkpoint, continue broad MCP product work from the current issue
