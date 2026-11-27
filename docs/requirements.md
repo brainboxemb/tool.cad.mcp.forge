@@ -39,7 +39,7 @@
 - End-to-end conversion acceptance must start from a native design produced independently of Forge, then prove an independently authored Forge model matches required parameters, body geometry and a common visual view.
 
 - Local startup accepts explicit --workspace, --forge-source and --solidcraft-cli arguments; existing environment variables remain fallback configuration.
-- forge-cad-mcp doctor validates workspace, exact Forge/SCPF 0.19.0 release and SolidCraft 0.49.0 version without executing a model and exits non-zero when the stack is not ready.
+- forge-cad-mcp doctor validates workspace, exact Forge/SCPF 0.25.0 release and SolidCraft 0.49.0 version without executing a model and exits non-zero when the stack is not ready.
 - The MCP environment tool reports the same path-free readiness contract so a client can decide whether CAD work is available.
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
