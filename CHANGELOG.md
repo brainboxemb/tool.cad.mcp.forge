@@ -7,6 +7,23 @@ compatibility are qualified separately and documented for each release.
 
 ## [Unreleased]
 
+## [0.0.4] - 2026-11-27
+
+### Changed
+
+- Move the exact SolidCraft baseline from 0.49.0 to current stable 0.50.0.
+- Qualify replay, native evaluation/component inspection, PNG rendering and
+  existing-design conversion against immutable CAD runtime v0.3.8.
+- Keep Forge/SCPF pinned to v0.25.0 and preserve the v0.0.3 live SolidCraft
+  control/tool/skill surface.
+
+### Compatibility
+
+- Forge/SCPF 0.25.0.
+- SolidCraft 0.50.0 through `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8`
+  and the authenticated local GUI control channel.
+- Python 3.11+.
+
 ## [0.0.3] - 2026-11-27
 
 ### Added
