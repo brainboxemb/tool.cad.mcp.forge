@@ -3,21 +3,21 @@
 from __future__ import annotations
 
 from pathlib import Path
+import subprocess
 
 from .github import GitHub
 from .policy import ReleasePolicyError, parse_command, validate_source
 
 
-def publish(
+def _validated_request(
     *,
     repository: str,
     command: str,
     actor: str,
     owner: str,
-    issue_number: int,
     token: str,
     source_root: Path,
-) -> tuple[str, str]:
+):
     if actor != owner:
         raise ReleasePolicyError("only the repository owner may publish a release")
 
@@ -35,6 +35,67 @@ def publish(
         raise ReleasePolicyError(
             "release SHA has no successful latest central ci check"
         )
+    return tag, target_sha, notes, github
+
+
+def _source_head(source_root: Path) -> str:
+    try:
+        return subprocess.run(
+            ["git", "-C", str(source_root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+            timeout=10,
+        ).stdout.strip()
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ReleasePolicyError("cannot validate checked-out release source") from exc
+
+
+def preflight(
+    *,
+    repository: str,
+    command: str,
+    actor: str,
+    owner: str,
+    token: str,
+    source_root: Path,
+) -> tuple[str, str]:
+    """Validate the exact local/current-main source before expensive acceptance."""
+
+    tag, target_sha, _, _ = _validated_request(
+        repository=repository,
+        command=command,
+        actor=actor,
+        owner=owner,
+        token=token,
+        source_root=source_root,
+    )
+    local_head = _source_head(source_root)
+    if local_head != target_sha:
+        raise ReleasePolicyError(
+            f"checked-out source is not release SHA: {local_head} != {target_sha}"
+        )
+    return tag, target_sha
+
+
+def publish(
+    *,
+    repository: str,
+    command: str,
+    actor: str,
+    owner: str,
+    issue_number: int,
+    token: str,
+    source_root: Path,
+) -> tuple[str, str]:
+    tag, target_sha, notes, github = _validated_request(
+        repository=repository,
+        command=command,
+        actor=actor,
+        owner=owner,
+        token=token,
+        source_root=source_root,
+    )
 
     existing_target = github.tag_target(tag)
     if existing_target is None:

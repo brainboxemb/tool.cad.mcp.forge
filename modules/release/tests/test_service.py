@@ -4,7 +4,7 @@ import unittest
 from unittest.mock import patch
 
 from forge_mcp_release.policy import ReleasePolicyError
-from forge_mcp_release.service import publish
+from forge_mcp_release.service import preflight, publish
 
 
 SHA = "a" * 40
@@ -63,6 +63,37 @@ class ReleaseServiceTests(unittest.TestCase):
             encoding="utf-8",
         )
         return path
+
+    @patch("forge_mcp_release.service.GitHub", FakeGitHub)
+    @patch("forge_mcp_release.service._source_head", return_value=SHA)
+    def test_preflight_requires_exact_checked_out_current_main(self, source_head):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._root(Path(tmp))
+            tag, target = preflight(
+                repository="brainboxemb/tool.cad.mcp.forge",
+                command=f"/release v0.0.1 {SHA}",
+                actor="brainboxemb",
+                owner="brainboxemb",
+                token="token",
+                source_root=root,
+            )
+            self.assertEqual((tag, target), ("v0.0.1", SHA))
+            source_head.assert_called_once_with(root)
+
+    @patch("forge_mcp_release.service.GitHub", FakeGitHub)
+    @patch("forge_mcp_release.service._source_head", return_value="b" * 40)
+    def test_preflight_rejects_wrong_checked_out_sha(self, _source_head):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = self._root(Path(tmp))
+            with self.assertRaisesRegex(ReleasePolicyError, "checked-out source"):
+                preflight(
+                    repository="brainboxemb/tool.cad.mcp.forge",
+                    command=f"/release v0.0.1 {SHA}",
+                    actor="brainboxemb",
+                    owner="brainboxemb",
+                    token="token",
+                    source_root=root,
+                )
 
     @patch("forge_mcp_release.service.GitHub", FakeGitHub)
     def test_publish_is_idempotent_for_correct_tag_and_release(self):

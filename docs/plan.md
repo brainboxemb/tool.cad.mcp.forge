@@ -58,8 +58,10 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 Development-cycle cost is architectural. Normal PRs use one qualification path.
 Documentation/repository-policy-only PRs do not start SolidCraft; runtime-
-sensitive PRs use at most one released CAD runtime container; every stable
-`main` SHA receives complete released-stack acceptance.
+sensitive PRs use at most one released CAD runtime container. Ordinary
+`main` pushes run fast CI only. Complete released-stack acceptance belongs to
+runtime-sensitive PRs, explicit manual diagnosis and the exact `/release`
+transaction, never to every merged main SHA.
 
 ## Active workstreams
 
@@ -96,6 +98,8 @@ edits.
   heredocs and batched runtime plus conversion acceptance into one SolidCraft
   container/venv setup.
 - #77 published MCP v0.0.4 from qualified stable `main`.
+- #80 moved the stable full released-stack gate from every `main` push into
+  the exact repository-local `/release` transaction.
 
 ## Next checkpoint
 

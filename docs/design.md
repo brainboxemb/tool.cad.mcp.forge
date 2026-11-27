@@ -89,23 +89,31 @@ Pull requests are path-classified by `scripts/ci_scope.py`. Changes to the MCP
 package, packaging, Forge compilation/runtime acceptance tests, acceptance
 fixtures or the central CI workflow require released-stack acceptance.
 Documentation and repository-policy-only pull requests do not start SolidCraft.
-Every push to stable `main` and every manual CI dispatch runs the complete
-released-stack acceptance regardless of changed paths, so the exact stable SHA
-used by the release gate has real CAD-runtime evidence.
+Ordinary pushes to stable `main` run the fast central CI only; they never
+start SolidCraft merely because a PR was merged. An explicit manual CI dispatch
+can request full released-stack acceptance for diagnosis. Normal release
+publication owns the stable full-stack gate: the `/release` workflow first
+validates that its local checkout is the exact requested current `main` SHA
+with green central CI, then runs the complete released-stack acceptance before
+tagging or publishing.
 
 Released-stack fixture construction is maintained in
-`scripts/prepare_acceptance.py` plus `tests/fixtures/acceptance_box.py`; the
-workflow no longer authors Python models through shell heredocs. Compatible
-runtime replay/render acceptance and existing-design conversion acceptance run
-inside one `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one
-temporary Python environment.
+`scripts/prepare_acceptance.py` plus `tests/fixtures/acceptance_box.py`.
+`scripts/run_released_stack_acceptance.sh` is the single maintained runner
+used by runtime-sensitive PR CI, explicit manual full CI and the release
+workflow. Compatible runtime replay/render acceptance and existing-design
+conversion acceptance run inside one
+`ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` container and one temporary Python
+environment.
 
 The structural CI performance budget is deterministic:
 
 - documentation/repository-policy-only PR: zero SolidCraft container starts;
 - runtime-sensitive PR: at most one SolidCraft container start;
-- stable `main` or manual full qualification: exactly one SolidCraft
-  container start when the job reaches released-stack acceptance;
+- ordinary stable `main` push: zero SolidCraft container starts;
+- explicit manual full CI: exactly one SolidCraft container start;
+- `/release` for the exact current stable SHA: exactly one SolidCraft
+  container start before publication;
 - one MCP wheel and one container virtual-environment install serve both real
   SolidCraft acceptance test modules.
 

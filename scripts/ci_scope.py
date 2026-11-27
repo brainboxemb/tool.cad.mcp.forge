@@ -11,9 +11,11 @@ from typing import Iterable
 _RUNTIME_FILES = frozenset(
     {
         ".github/workflows/ci.yml",
+        ".github/workflows/release.yml",
         "pyproject.toml",
         "scripts/ci_scope.py",
         "scripts/prepare_acceptance.py",
+        "scripts/run_released_stack_acceptance.sh",
         "tests/test_compiler.py",
         "tests/test_conversion.py",
         "tests/test_runtime.py",
@@ -54,11 +56,13 @@ def changed_paths(base: str, head: str) -> tuple[str, ...]:
 
 
 def runtime_for_event(event: str, paths: Iterable[str] = ()) -> bool:
-    """Stable main/manual runs are full; PR runs are path-sensitive."""
+    """PRs are path-sensitive; only explicit manual CI is full outside PRs."""
 
-    if event != "pull_request":
+    if event == "pull_request":
+        return runtime_required(paths)
+    if event == "workflow_dispatch":
         return True
-    return runtime_required(paths)
+    return False
 
 
 def main() -> None:
