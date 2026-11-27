@@ -13,8 +13,12 @@ def test_skill_entrypoints_without_forge(monkeypatch):
     async def run():
         async with Client(mcp) as client:
             result = await client.call_tool("skill_list", {})
-            assert {s["skill"] for s in result.data["skills"]} == {"forge-modeling", "solidcraft-to-forge"}
-            for name in ("forge-modeling", "solidcraft-to-forge"):
+            assert {s["skill"] for s in result.data["skills"]} == {
+                "forge-modeling",
+                "solidcraft-to-forge",
+                "solidcraft-control",
+            }
+            for name in ("forge-modeling", "solidcraft-to-forge", "solidcraft-control"):
                 result = await client.call_tool("skill_reference", {"skill": name, "file": "SKILL.md"})
                 assert result.data["content"].startswith("---")
             with pytest.raises(Exception, match="FORGE_SOURCE_ROOT"):
