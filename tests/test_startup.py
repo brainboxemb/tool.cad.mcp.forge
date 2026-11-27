@@ -55,7 +55,7 @@ def test_doctor_accepts_explicit_catalog_and_model_root(tmp_path):
     assert result.returncode == 0, result.stderr
     report = json.loads(result.stdout)
     assert report["ready"] is True
-    assert report["forge"]["version"] == "0.19.0"
+    assert report["forge"]["version"] == "0.25.0"
     assert report["solidcraft"]["version"] == "0.49.0"
     assert report["workspace"]["root"] == str(model.resolve())
     assert report["workspace"]["cad_library_root"] == str(library.resolve())

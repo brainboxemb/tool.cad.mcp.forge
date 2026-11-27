@@ -5,8 +5,8 @@ import os
 from pathlib import Path
 import subprocess
 
-FORGE_VERSION = "0.19.0"
-FORGE_COMMIT = "ce9cd4439efe51edc360b7bfffb77b950e218d32"
+FORGE_VERSION = "0.25.0"
+FORGE_REF = "v0.25.0"
 
 
 class KnowledgeError(ValueError):
@@ -32,8 +32,12 @@ def source_root() -> Path:
         installed = metadata.version("scpf")
     except metadata.PackageNotFoundError as exc:
         raise KnowledgeError("Install scpf from the supported checkout's cadlib directory") from exc
-    if installed != FORGE_VERSION or _git(root, "rev-parse", "HEAD") != FORGE_COMMIT:
-        raise KnowledgeError(f"Forge knowledge requires scpf {FORGE_VERSION} at {FORGE_COMMIT}")
+    head = _git(root, "rev-parse", "HEAD")
+    tagged = _git(root, "rev-list", "-n", "1", FORGE_REF)
+    if installed != FORGE_VERSION or head != tagged:
+        raise KnowledgeError(
+            f"Forge knowledge requires scpf {FORGE_VERSION} at tag {FORGE_REF}"
+        )
     if _git(root, "status", "--porcelain", "--untracked-files=no"):
         raise KnowledgeError("Forge source checkout has tracked modifications")
     return root

@@ -13,7 +13,7 @@ def doctor(*, include_paths: bool = False) -> dict:
         "fastmcp": {"version": metadata.version("fastmcp")},
         "forge": {
             "required_version": knowledge.FORGE_VERSION,
-            "required_commit": knowledge.FORGE_COMMIT,
+            "required_ref": knowledge.FORGE_REF,
             "ready": False,
         },
         "solidcraft": {

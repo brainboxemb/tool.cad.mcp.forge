@@ -8,7 +8,7 @@ Discover actual installed API and CLI contracts before implementing CAD adapters
 
 ## Forge knowledge
 
-The initial supported Forge release is v0.19.0, commit ce9cd4439efe51edc360b7bfffb77b950e218d32. Install scpf from that checkout's cadlib directory and configure FORGE_SOURCE_ROOT to the checkout. Knowledge validates the installed distribution version and local checkout commit and rejects tracked checkout modifications. It does not fetch anything at request time. The install procedure and CI use the same checkout; a matching version alone is not a cryptographic proof of installed wheel provenance.
+The supported Forge release is v0.25.0. Install scpf from that tagged checkout's cadlib directory and configure FORGE_SOURCE_ROOT to the checkout. Knowledge validates the installed distribution version and requires the checkout HEAD to resolve from the local v0.25.0 tag; it also rejects tracked checkout modifications. It does not fetch anything at request time. The install procedure and CI use the same checkout; a matching version alone is not a cryptographic proof of installed wheel provenance.
 
 Skills are the primary knowledge interface, following the SolidCraft skill-reference pattern. Expose only skill_list and skill_reference for knowledge; no separate search tool family. Each packaged SKILL.md teaches a task workflow, followed by explicit references. The initial MCP-owned workflow skills are forge-modeling and solidcraft-to-forge; Forge remains owner of API semantics, guides, cheatsheet and examples. A later Forge-side skill move can be coordinated when reusable ownership is established. References are resolved from an explicit allowlist or constrained symbol/example/guide paths in the validated checkout. Public signatures/docstrings come from installed scpf. The reference index is discoverable, and no arbitrary filesystem access or generated Python execution is provided. The conversion skill describes the intended workflow; actual native model analysis and comparison are gated by #5.
 
@@ -22,7 +22,7 @@ Native .sc and JSON inputs remain immutable through the MCP editor; metadata/doc
 
 ## Forge compilation
 
-forge_compile is the only initial model-execution boundary. It validates the same Forge v0.19.0 release used by skill references, resolves one existing workspace .py source, and invokes the supported `python -m scpf <source> --out <build/...json>` interface without a shell. The process runs with the workspace as cwd, has a fixed timeout and bounded captured diagnostics. Before each attempt it removes the previous target so a failed build cannot leave stale command evidence.
+forge_compile is the only initial model-execution boundary. It validates the same Forge v0.25.0 release used by skill references, resolves one existing workspace .py source, and invokes the supported `python -m scpf <source> --out <build/...json>` interface without a shell. The process runs with the workspace as cwd, has a fixed timeout and bounded captured diagnostics. Before each attempt it removes the previous target so a failed build cannot leave stale command evidence.
 
 Successful output must be a non-empty JSON object with a commands array; the tool returns command count, size and SHA-256. Compile/model errors are normal structured results with ok=false, while invalid workspace/configuration requests remain tool errors. Running a Forge model executes Python and is therefore permitted only for local stdio during this stage. Remote execution requires the later sandbox/authentication gate.
 
@@ -50,7 +50,7 @@ The installed `forge-cad-mcp` command remains the single server entrypoint. It a
 
 The SolidCraft adapter stores one configured CLI executable instead of assuming PATH. `detect_version()` runs only `<cli> --version`; model/runtime methods still enforce the local-stdio execution gate and exact 0.49.0 version before CAD work.
 
-`doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.19.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
+`doctor` is deliberately not a CAD action. It checks the workspace contract, validates installed scpf 0.25.0 plus the exact clean Forge release checkout, and probes SolidCraft version. It returns structured JSON and a process status. The MCP `environment` tool returns the same readiness data without absolute paths. FastMCP is pinned to the exact 2.14.7 version qualified by protocol/runtime acceptance.
 
 No VS Code/Claude/Codex-specific adapter exists. Their configuration points to the same stdio executable with the same arguments.
 
@@ -64,4 +64,4 @@ When this binding is active, the selected model folder becomes the workspace roo
 
 The target owner remains the only workspace and the only writable boundary. Assemblies and subassemblies can inspect reusable owners elsewhere in the same configured CAD library through `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)`. Both calls require exact catalog-relative paths; `catalog_dependency_list` accepts only a directory containing its own `model.yml`, and neither tool offers fuzzy search across the catalog. Native `.sc` dependencies remain opaque and are not exposed as text.
 
-Forge compilation keeps its source and outputs inside the target owner. Forge 0.19's own model import context detects the enclosing `models/` tree and makes the project root available for existing namespace imports such as `from models.components.simple_mft...`; MCP does not add a parallel import mechanism. Dependency owners remain read-only through MCP. Target selection and dependency resolution are therefore separate concerns: one exact writable target, many exact read-only dependencies.
+Forge compilation keeps its source and outputs inside the target owner. Forge 0.25's own model import context detects the enclosing `models/` tree and makes the project root available for existing namespace imports such as `from models.components.simple_mft...`; MCP does not add a parallel import mechanism. Dependency owners remain read-only through MCP. Target selection and dependency resolution are therefore separate concerns: one exact writable target, many exact read-only dependencies.

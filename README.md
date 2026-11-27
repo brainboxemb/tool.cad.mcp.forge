@@ -2,7 +2,7 @@
 
 Vendor-neutral local MCP server for AI-assisted Python Forge CAD authoring with SolidCraft inspection, rendering and verification.
 
-The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.19.0 and SolidCraft 0.49.0. The server is AI-client independent; stdio is the normal local transport.
+The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.25.0 and SolidCraft 0.49.0. The server is AI-client independent; stdio is the normal local transport.
 
 ## Local setup
 
@@ -12,7 +12,7 @@ Create one Python environment containing this package and the exact supported Fo
 
 ```sh
 git clone https://github.com/brainboxemb/lib.py.solidcraft.forge.git forge-release
-git -C forge-release checkout --detach ce9cd4439efe51edc360b7bfffb77b950e218d32
+git -C forge-release checkout --detach v0.25.0
 python -m pip install ./forge-release/cadlib
 python -m pip install .
 ```
@@ -66,7 +66,7 @@ Call `skill_list`, then read the relevant `SKILL.md` using `skill_reference`.
 - `forge-modeling` — create or edit maintainable Python Forge models.
 - `solidcraft-to-forge` — understand an existing native SolidCraft design and translate it into verified Forge Python.
 
-References are matched to Forge 0.19.0. After local setup, model iteration does not require GitHub calls.
+References are matched to Forge 0.25.0. After local setup, model iteration does not require GitHub calls.
 
 ## Local authoring loop
 
