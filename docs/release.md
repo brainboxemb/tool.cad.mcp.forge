@@ -25,15 +25,18 @@ Use a normal release-tracking issue and comment:
 /release vX.Y.Z <exact-40-character-main-sha>
 ~~~
 
-The repository release workflow:
+The repository release workflow is intentionally self-contained:
 
-1. parses the exact release request;
-2. requires a successful central `ci` check for the requested SHA;
-3. delegates publication to the released
-   `brainboxemb/tool.py.lib.ci` reusable release workflow;
+1. checks out stable `main`;
+2. runs the repository-local `modules/release` Python capability;
+3. parses the exact release request and requires the repository owner;
 4. validates `pyproject.toml` and the matching dated changelog section;
 5. verifies the requested SHA is the current stable `main` head;
-6. creates or verifies the immutable `vX.Y.Z` tag and GitHub Release;
-7. records the published release on the triggering issue.
+6. requires the latest central `ci` check on that SHA to be successful;
+7. creates or verifies the immutable annotated `vX.Y.Z` tag;
+8. creates or verifies the GitHub Release and records it on the triggering issue.
+
+Release parsing, validation, tagging and GitHub Release publication are owned by
+this repository. The workflow does not call an external release publisher.
 
 Do not create normal release tags manually.
