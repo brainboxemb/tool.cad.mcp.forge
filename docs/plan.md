@@ -72,10 +72,11 @@ acceptance.
 
 ### WS2 — CI feedback-loop cleanup
 
-The current central CI still performs package tests, fixture construction, wheel
-building, two separate SolidCraft container/venv acceptance runs and repository
-policy tests in one serial job. Redesign that feedback loop separately; do not
-hide it inside feature work.
+Issue #75 replaces the serial always-expensive PR path with one stable `ci`
+gate that runs fast policy/package tests first and conditionally runs real
+SolidCraft acceptance. Runtime and conversion acceptance share one released CAD
+runtime container and one virtual environment. Stable `main` still receives
+the complete released-stack acceptance on every push.
 
 ## Open issue assignment
 
@@ -99,6 +100,9 @@ hide it inside feature work.
   source baseline on `main`.
 - #70 removes the unnecessary permanent dev/promotion lane and makes `main`
   the single integration branch.
+- #75 makes released-stack CI path-sensitive on pull requests, removes inline
+  model heredocs and batches runtime plus conversion acceptance into one
+  SolidCraft container/venv setup.
 
 ## Next release/checkpoint
 
@@ -106,5 +110,5 @@ Publish MCP v0.0.4 from qualified `main`, update the workspace
 template/concrete workspace pins, and rerun the real Windows standalone
 workbench doctor plus the 60 x 20 x 4 mm / diameter-8 live SolidCraft demo.
 
-After that, take the CI feedback-loop cleanup as the next repository
-infrastructure change before adding another broad capability.
+With the branch lifecycle and CI feedback loop simplified, broad product work
+may continue after the v0.0.4 publication/workspace checkpoint.
