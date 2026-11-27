@@ -8,6 +8,7 @@ from . import knowledge
 _SKILLS = {
     "forge-modeling": "Author maintainable Python Forge models using the installed release.",
     "solidcraft-to-forge": "Understand an existing native SolidCraft design and translate it into verified Forge Python.",
+    "solidcraft-control": "Operate and inspect the running SolidCraft GUI through the authenticated control channel.",
 }
 
 _REFS = {
