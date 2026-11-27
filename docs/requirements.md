@@ -29,7 +29,9 @@
 - solidcraft_replay accepts generated command JSON below build/ and writes a native .sc only below build/.
 - solidcraft_evaluate accepts an existing workspace .sc, persists measurements below build/, and returns compact parameters/body/history/sketch evidence; optional full evidence is size-bounded.
 - solidcraft_snapshot accepts an existing workspace .sc, writes PNG only below build/, validates dimensions/output and returns the PNG through MCP for visual analysis.
-- No generic arbitrary SolidCraft command runner is exposed. Native source files are inspected through engine-owned eval/render operations.
+- Headless/file-oriented SolidCraft operations remain purpose-specific and bounded to workspace build paths.
+- Trusted local stdio additionally exposes live SolidCraft GUI control through Forge's existing authenticated `scpf.live` client. `solidcraft_live_execute` executes one registered native SolidCraft engine command with SolidCraft strict parameter validation; it is an engine-command surface, not an OS shell or subprocess command runner.
+- Live control may create a new active design, apply a compiled Forge replay document, inspect the active document, change native parameters/views and render the active GUI model. HTTP transport may not execute live control.
 
 - solidcraft_components uses only the internally generated read-only component.list command, never caller-supplied command JSON, and returns its structured result below build/.
 
@@ -43,6 +45,8 @@
 - The MCP environment tool reports the same path-free readiness contract so a client can decide whether CAD work is available.
 - The first qualified dependency baseline pins FastMCP 2.14.7 rather than floating across untested 2.x releases.
 - One installed server command and argument list must work for any stdio-capable MCP client; no client-specific extension is required.
+- A standalone workspace may contain optional `project.yml` local workbench configuration. Forge source defaults to `scpf/model.py`; live SolidCraft connection defaults to automatic localhost discovery; evidence logging defaults to `build/session.jsonl` and live model rendering to `build/live/model.png`. Configured source/evidence paths may not escape the workspace, and live evidence outputs must stay below `build/`.
+- Live MCP actions append bounded JSONL evidence when enabled. Authentication tokens are never returned or logged.
 
 - Catalog-backed sessions use `CAD_LIBRARY_ROOT` plus `CAD_MODEL_ROOT` (CLI: `--cad-library` + `--model-root`). The model root must be one exact owner below the configured CAD library's `models/` tree and contain its own `model.yml`.
 - The configured model root is authoritative. AI workflows must not search the surrounding catalog for a target, choose among similarly named owners, or switch owners implicitly.

@@ -4,15 +4,14 @@ This is the source of truth for unfinished work.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.1` from stable
-`main` commit `5db8d61e292683a6e5aa1f6758a201663bb447fc`. Stable main
-qualification run `46029948156` passed the package, real SolidCraft runtime,
-existing-design conversion and repository-policy gates.
+The qualified local Forge MCP baseline is released as `v0.0.2` from stable
+`main` commit `3d09d3f2b0b6ff4aab832a56a827b31513753b99`. Release workflow
+run `46032398960` succeeded after stable main qualification.
 
 The stable baseline includes:
 
 - FastMCP 2.14.7 with stdio as the normal local client transport;
-- Forge/SCPF 0.19.0 at the exact supported release checkout;
+- Forge/SCPF 0.25.0 at the exact supported release checkout;
 - SolidCraft 0.49.0, accepted through
   `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6`;
 - skills-first authoring through `forge-modeling` and
@@ -53,18 +52,21 @@ read-only; it exists only to support reuse by assemblies/subassemblies.
 
 ## Active workstreams
 
-### WS1 — Forge v0.25.0 compatibility
+### WS1 — live SolidCraft workbench control
 
-Issue #49 moves the version-matched MCP baseline to the same Forge release used
-by the active CAD development catalog. CI and local knowledge use the immutable
-`v0.25.0` tag rather than embedding its commit SHA. Existing runtime,
-conversion and repository-policy acceptance remain mandatory.
+The next MCP capability extends the trusted local stdio workflow from
+headless/file-oriented SolidCraft evidence to deliberate control of the running
+SolidCraft GUI through Forge's existing authenticated `scpf.live` control
+client. The MCP must keep Forge authoring and SolidCraft control distinct while
+letting one workbench session compile/apply Forge source, inspect the active
+design, run native SolidCraft commands, change parameters/views and capture
+live evidence.
 
 ## Open issue assignment
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #49 | MCP `dev` | now | Qualify Forge `v0.25.0`, promote the accepted checkpoint, then publish MCP `v0.0.2` |
+| #56 | MCP `dev` | now | Add bounded live SolidCraft GUI tools, session evidence logging and the SolidCraft-control skill |
 
 ## Recently completed
 
@@ -88,11 +90,14 @@ conversion and repository-policy acceptance remain mandatory.
   because publication ownership must remain repository-local.
 - #45 repository-local release capability under `modules/release`.
 - #48 published and verified the first MCP release, `v0.0.1`.
+- #49 qualified Forge/SCPF `v0.25.0`, promoted it to stable `main`, and
+  published MCP `v0.0.2`.
 
 ## Next checkpoint
 
-Complete #49 against Forge `v0.25.0`, then publish MCP `v0.0.2` through
-the repository-local release workflow. After that, update the workspace
-dependency contract to MCP `v0.0.2` plus Forge `v0.25.0` release tags.
+Add and qualify live SolidCraft workbench control against the existing
+Forge/SCPF `v0.25.0` + SolidCraft `0.49.0` baseline, then publish the next
+MCP release and update the workspace template/consumer pins. The first operator
+demo is a standalone local workbench, not a catalog model.
 
 Do not add a Docker distribution merely to publish the MCP.
