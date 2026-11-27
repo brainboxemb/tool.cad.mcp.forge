@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.7` from stable
-`main` commit `57c9e0de05d27d895292a40dbbda3b9d270d7ea1`.
+The qualified local Forge MCP baseline is released as `v0.0.8` from stable
+`main` commit `da720b8001b3e563cd8c1b56de459425979a0404`.
 
 The accepted stack is:
 
@@ -70,7 +70,7 @@ only to create the exact `main` CI record required by release.
 
 ### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.7 is published and consumed by the template/concrete workspace.
+MCP v0.0.8 is published and is the current workspace acceptance baseline.
 Real Windows Codex acceptance has now proven MCP discovery, fast status,
 release-matched knowledge access and the generated workbench skill router.
 `forge-modeling` now teaches and CI-compiles the minimal `scpf/model.py`
@@ -93,9 +93,13 @@ edits.
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
 | #41 | MCP | effectively complete | Confirm the accepted explicit workspace/toolchain contract covers the requested behavior, then close |
 | #42 | external workspace owner | move out | Track workspace-template work in its owning repository rather than this MCP repository |
+| #105 | MCP/docs | active | Reconcile v0.0.8 baseline and repository bookkeeping, then resume Windows live acceptance |
 
 ## Recently completed
 
+- v0.0.8 released the accepted `forge-modeling` scope clarification and native
+  `Hole` history semantics from stable `main` commit
+  `da720b8001b3e563cd8c1b56de459425979a0404`.
 - #96 made `forge-modeling` the real new-model skill, including executable
   `scpf/model.py` examples compiled against Forge/SCPF v0.25.0 in package CI.
 - #91 removed per-call Forge Git validation from knowledge/reference and compile
@@ -120,7 +124,7 @@ edits.
 ## Next checkpoint
 
 Resume the already-started Windows 60 × 20 × 4 mm / Ø8 live SolidCraft demo
-against workspace-pinned MCP v0.0.7. Treat #95 as a separate documentation
+against workspace-pinned MCP v0.0.8. Treat #95 as a separate documentation
 alignment task unless the live engine exposes an actual 0.50 command mismatch.
 
 After that checkpoint, continue broad MCP product work from the current issue
