@@ -196,6 +196,13 @@ def test_forge_live_compiles_then_applies_document_to_gui(tmp_path, monkeypatch)
     assert calls[2][0] == "send"
 
 
+def test_live_control_reports_missing_forge_client(tmp_path, monkeypatch):
+    _workspace(tmp_path, monkeypatch)
+    monkeypatch.setattr(live, "scpf_live", None)
+    with pytest.raises(live.LiveControlError, match="requires the qualified Forge/SCPF"):
+        live.execute("parameters.list", {})
+
+
 def test_live_control_can_be_disabled(tmp_path, monkeypatch):
     _workspace(tmp_path, monkeypatch)
     live.set_execution_enabled(False)
