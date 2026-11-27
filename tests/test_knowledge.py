@@ -30,7 +30,7 @@ def test_real_forge_skill_references():
             async def read(file):
                 result = await client.call_tool("skill_reference", {"skill": "forge-modeling", "file": file})
                 assert not result.is_error
-                assert result.data["forge_version"] == "0.19.0"
+                assert result.data["forge_version"] == "0.25.0"
                 return result.data["content"]
             index = json.loads(await read("references/index.json"))
             assert "references/examples/simple-box.py" in index["examples"]
