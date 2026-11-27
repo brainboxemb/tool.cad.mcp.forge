@@ -4,8 +4,9 @@ Forge CAD MCP releases are published only from qualified stable `main`.
 
 ## Prepare the release
 
-Normal product changes integrate through `dev` and reach `main` through the
-repository `/merge` policy.
+Normal product changes use one temporary work branch and PR directly to
+`main`, integrated through the repository `/merge` policy. There is no
+permanent development/promotion branch.
 
 Before publication:
 
@@ -14,8 +15,9 @@ Before publication:
 3. integrate the release state to `main`;
 4. verify the central `ci` check on that exact `main` SHA is green.
 
-Release metadata and product changes may be reviewed together when appropriate,
-but the release command itself never changes source.
+Release metadata may use a temporary `release/*` branch to `main` when it is
+not part of the product-change PR. The release command itself never changes
+source.
 
 ## Publish
 

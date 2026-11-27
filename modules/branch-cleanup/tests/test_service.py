@@ -6,7 +6,6 @@ from cad_model_branch_cleanup.service import post_merge_cleanup, sweep
 
 CONFIG = CleanupConfig(
     stable="main",
-    development="dev",
     temporary_prefixes=("issue/", "fix/", "release/"),
 )
 
@@ -16,7 +15,6 @@ class FakeClient:
         self.deleted = []
         self._branches = [
             "main",
-            "dev",
             "issue/1-done",
             "fix/2-open",
             "release/v1.2.3",
@@ -30,20 +28,30 @@ class FakeClient:
         return branch == "fix/2-open"
 
     def merged_pr_to(self, branch, base):
-        return (
-            branch in {"issue/1-done", "fix/2-open"} and base == "dev"
-        ) or (
-            branch == "release/v1.2.3" and base == "main"
-        )
+        return branch in {"issue/1-done", "fix/2-open", "release/v1.2.3"} and base == "main"
 
     def delete_branch(self, branch):
         self.deleted.append(branch)
 
 
 class ServiceTests(unittest.TestCase):
-    def test_post_merge_deletes_only_safe_temporary_branch(self):
+    def test_post_merge_deletes_safe_temporary_branch_from_main(self):
         client = FakeClient()
         self.assertTrue(
+            post_merge_cleanup(
+                client,
+                head="issue/1-done",
+                base="main",
+                same_repository=True,
+                merged=True,
+                config=CONFIG,
+            )
+        )
+        self.assertEqual(client.deleted, ["issue/1-done"])
+
+    def test_post_merge_rejects_old_dev_target(self):
+        client = FakeClient()
+        self.assertFalse(
             post_merge_cleanup(
                 client,
                 head="issue/1-done",
@@ -53,29 +61,9 @@ class ServiceTests(unittest.TestCase):
                 config=CONFIG,
             )
         )
-        self.assertEqual(client.deleted, ["issue/1-done"])
+        self.assertEqual(client.deleted, [])
 
-    def test_post_merge_deletes_release_branch_only_from_stable(self):
-        client = FakeClient()
-        self.assertTrue(
-            post_merge_cleanup(
-                client,
-                head="release/v1.2.3",
-                base="main",
-                same_repository=True,
-                merged=True,
-                config=CONFIG,
-            )
-        )
-        self.assertEqual(client.deleted, ["release/v1.2.3"])
-
-    def test_sweep_accepts_experimental_merge(self):
-        client = FakeClient()
-        client._branches = ["exp", "issue/3-experiment"]
-        client.merged_pr_to = lambda branch, base: branch == "issue/3-experiment" and base == "exp"
-        self.assertEqual(sweep(client, config=CONFIG), ("issue/3-experiment",))
-
-    def test_sweep_keeps_permanent_open_and_unproven_branches(self):
+    def test_sweep_keeps_main_open_and_unproven_branches(self):
         client = FakeClient()
         deleted = sweep(client, config=CONFIG)
         self.assertEqual(deleted, ("issue/1-done", "release/v1.2.3"))
