@@ -43,6 +43,7 @@ def test_real_forge_skill_references():
             assert method["signature"]
             assert "class SimpleBox" in await read("references/examples/simple-box.py")
             assert "Placement" in await read("references/api.md")
+            assert await read("references/cheatsheet.yml")
             assert await read("references/guide/getting-started.html")
             with pytest.raises(Exception, match="Unknown skill reference"):
                 await read("../secret")
