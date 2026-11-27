@@ -8,7 +8,7 @@ import re
 import tomllib
 
 
-_SEMVER = re.compile(r"^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$")
+_SEMVER = re.compile(r"^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$")
 _SHA = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -25,7 +25,7 @@ def release_notes(changelog: str, version: str) -> str:
         raise SystemExit("CHANGELOG.md has no [Unreleased] section")
 
     heading = re.compile(
-        rf"^## \\[{re.escape(version)}\\] - \\d{{4}}-\\d{{2}}-\\d{{2}}$",
+        rf"^## \[{re.escape(version)}\] - \d{{4}}-\d{{2}}-\d{{2}}$",
         re.MULTILINE,
     )
     match = heading.search(changelog)
@@ -34,7 +34,7 @@ def release_notes(changelog: str, version: str) -> str:
     if match.start() < unreleased:
         raise SystemExit(f"[{version}] must follow the [Unreleased] section")
 
-    next_heading = re.compile(r"^## \\[", re.MULTILINE).search(
+    next_heading = re.compile(r"^## \[", re.MULTILINE).search(
         changelog, match.end()
     )
     end = next_heading.start() if next_heading else len(changelog)
