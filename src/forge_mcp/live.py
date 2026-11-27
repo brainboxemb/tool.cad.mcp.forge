@@ -13,6 +13,7 @@ from . import compiler, workspace
 
 
 MAX_LIVE_RESULT_BYTES = 1_000_000
+MAX_REPLAY_LOG_BYTES = 10_000_000
 MAX_LOG_VALUE_BYTES = 32_000
 PROJECT_FILE = "project.yml"
 
@@ -367,22 +368,31 @@ def forge_live(
                 connect=_connect(),
             )
         applied = scpf_live.send_document(document, connect=_connect())
-        applied = _bounded_result(applied)
+        if not isinstance(applied, dict):
+            raise LiveControlError("SolidCraft returned an invalid Forge replay result")
 
+        replay_log_data = applied.get("replay_log", {})
+        replay_log_text = json.dumps(
+            replay_log_data,
+            indent=2,
+            ensure_ascii=False,
+            allow_nan=False,
+        ) + "\n"
+        if len(replay_log_text.encode("utf-8")) > MAX_REPLAY_LOG_BYTES:
+            raise LiveControlError("Forge live replay log exceeds the evidence size limit")
         replay_log_path = "build/live/replay-log.json"
         _, replay_log = workspace._resolve(replay_log_path)
         replay_log.parent.mkdir(parents=True, exist_ok=True)
-        replay_log.write_text(
-            json.dumps(applied.get("replay_log", {}), indent=2) + "\n",
-            encoding="utf-8",
-        )
+        replay_log.write_text(replay_log_text, encoding="utf-8")
+
+        variables = _bounded_result(applied.get("variables", {}))
         response = {
             "ok": True,
             "source": source,
             "compile": compiled,
-            "new_design": fresh,
+            "new_design": _bounded_result(fresh) if fresh is not None else None,
             "completed": applied.get("completed"),
-            "variables": applied.get("variables", {}),
+            "variables": variables,
             "replay_log": replay_log_path,
         }
     except Exception as exc:
