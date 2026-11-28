@@ -5,11 +5,11 @@ param(
     [string]$Path = (Split-Path -Parent $PSScriptRoot)
 )
 $ErrorActionPreference = "Stop"
-function Git([string[]]$Arguments) {
+function Invoke-RepoGit([string[]]$Arguments) {
     $result = & git -C $Path @Arguments
     if ($LASTEXITCODE -ne 0) { throw "git failed: $Arguments" }
     return $result
 }
-if (Git @("status","--porcelain")) { throw "Commit or explicitly stash local changes first." }
-Git @("fetch","origin",$Base) | Out-Host
-Git @("switch","-c","issue/$Issue-$Name","FETCH_HEAD") | Out-Host
+if (Invoke-RepoGit @("status","--porcelain")) { throw "Commit or explicitly stash local changes first." }
+Invoke-RepoGit @("fetch","origin",$Base) | Out-Host
+Invoke-RepoGit @("switch","-c","issue/$Issue-$Name","FETCH_HEAD") | Out-Host

@@ -5,20 +5,20 @@ param(
 )
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
-function Git([string[]]$Arguments) {
+function Invoke-RepoGit([string[]]$Arguments) {
     $value = & git -C $Root @Arguments
     if ($LASTEXITCODE -ne 0) { throw "git failed: $Arguments" }
     return $value
 }
-if (Git @("status","--porcelain")) { throw "Commit or explicitly stash local changes first." }
-Git @("fetch","origin","main") | Out-Host
-$Sha = Git @("rev-parse","FETCH_HEAD")
+if (Invoke-RepoGit @("status","--porcelain")) { throw "Commit or explicitly stash local changes first." }
+Invoke-RepoGit @("fetch","origin","main") | Out-Host
+$Sha = Invoke-RepoGit @("rev-parse","FETCH_HEAD")
 if ($Action -eq "prepare") {
-    Git @("switch","-c","release/$Version",$Sha) | Out-Host
+    Invoke-RepoGit @("switch","-c","release/$Version",$Sha) | Out-Host
     Write-Host "Edit only pyproject.toml project.version and CHANGELOG.md; test, commit and use pr.ps1."
 } else {
     if ($Issue -le 0) { throw "Supply the normal release tracking issue." }
-    if ((Git @("branch","--show-current")) -ne "main" -or (Git @("rev-parse","HEAD")) -ne $Sha) {
+    if ((Invoke-RepoGit @("branch","--show-current")) -ne "main" -or (Invoke-RepoGit @("rev-parse","HEAD")) -ne $Sha) {
         throw "Request release from the exact current stable main checkout."
     }
     $Expected = $Version.Substring(1)

@@ -1,5 +1,7 @@
 # Windows + VS Code + Conda local setup
 
+For normal managed workspace usage, use the [workspace manual](https://github.com/brainboxemb/template.cad.mcp.workspace/blob/main/docs/manual.md). For developing this server use the [developer manual](developer-manual.md). This guide retains manual client configuration instructions.
+
 This guide configures the qualified local Forge MCP baseline on Windows for the
 VS Code Copilot harness. It uses the same stdio server as other MCP clients; no
 VS Code extension and no MCP-specific Docker image are required.
@@ -9,7 +11,7 @@ Qualified baseline:
 - Python 3.12;
 - FastMCP 2.14.7;
 - Forge/SCPF 0.25.0 from release tag `v0.25.0`;
-- SolidCraft 0.49.0;
+- SolidCraft 0.50.0;
 - local stdio execution.
 
 The commands below use PowerShell.
@@ -71,9 +73,9 @@ Clone the stable MCP repository and install it in the same Conda environment:
 ```powershell
 Set-Location C:\Dev\SolidCraft
 git clone https://github.com/brainboxemb/tool.cad.mcp.forge.git forge-mcp
-git -C forge-mcp switch main
+git -C forge-mcp checkout --detach v0.0.9
 
-python -m pip install -e .\forge-mcp
+python -m pip install .\forge-mcp
 
 git clone https://github.com/brainboxemb/2026-011-02.cad.solidcraft.git cad-library
 git -C cad-library switch dev
@@ -90,7 +92,7 @@ A normal Conda installation resolves this to the environment's
 `Scripts\forge-cad-mcp.exe`. Use the path PowerShell reports rather than
 guessing the Conda installation directory.
 
-## 4. Locate SolidCraft 0.49.0
+## 4. Locate SolidCraft 0.50.0
 
 If `solidcraft-cli` is already on `PATH`:
 
@@ -101,7 +103,7 @@ where.exe solidcraft-cli
 ```
 
 Use the executable reported by one of these commands. If neither command finds
-it, locate `solidcraft-cli.exe` in the installed SolidCraft 0.49.0
+it, locate `solidcraft-cli.exe` in the installed SolidCraft 0.50.0
 installation and use that absolute path. This guide deliberately does not
 assume one Windows installation directory.
 
@@ -257,11 +259,11 @@ recommended configuration. That path belongs to the deprecated Local harness.
 3. Confirm that `forgeCad` is enabled and not in an error state.
 4. Start a Copilot chat and explicitly ask it to call the Forge MCP
    `environment` tool.
-5. Confirm `cad_ready: true`.
+5. Confirm `cad_ready: true` as a configuration check, not a substitute for doctor.
 6. Confirm `readiness.workspace.catalog_bound: true` and verify the exact
    `model_id` / `model_relative`.
 7. Ask it to call `skill_list`. The result should include
-   `forge-modeling` and `solidcraft-to-forge`.
+   `forge-modeling`, `solidcraft-control` and `solidcraft-to-forge`.
 8. Read the relevant `SKILL.md` through `skill_reference` before model work.
 
 MCP tool calls can still require normal Copilot approval. A configuration that
@@ -276,10 +278,9 @@ For a new Forge model:
 skill_list
   -> skill_reference(forge-modeling/SKILL.md)
   -> workspace_read/write
-  -> forge_compile
-  -> solidcraft_replay
-  -> solidcraft_analyze
-  -> solidcraft_snapshot
+  -> forge_live
+  -> solidcraft_live_inspect
+  -> solidcraft_live_render
 ```
 
 For an existing SolidCraft design:
@@ -295,13 +296,13 @@ model_input_summary
 
 ## 10. Updating the local MCP
 
-Update the MCP only from the stable `main` branch:
+Update to an explicit published MCP tag after checking compatibility (v0.0.9 shown):
 
 ```powershell
 conda activate forge-mcp
 
-git -C C:\Dev\SolidCraft\forge-mcp switch main
-git -C C:\Dev\SolidCraft\forge-mcp pull --ff-only
+git -C C:\Dev\SolidCraft\forge-mcp fetch --tags
+git -C C:\Dev\SolidCraft\forge-mcp checkout --detach v0.0.9
 python -m pip install --upgrade C:\Dev\SolidCraft\forge-mcp
 ```
 
@@ -335,7 +336,7 @@ Run the configured executable directly:
 & $SolidCraftCli --version
 ```
 
-It must report SolidCraft `0.49.0`.
+It must report SolidCraft `0.50.0`.
 
 ### The wrong model appears
 
