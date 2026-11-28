@@ -83,7 +83,10 @@ call `skill_reference` with skill `forge-modeling` and the exact file:
   `references/api/Shape.rectangular_pattern.json`,
   `references/api/Sketch.extrude.json` for methods.
 
-These return installed-release signatures and docstrings. Read only unresolved
+These API paths are virtual references, not files in the checkout. The MCP
+constructs the JSON response directly from the installed public Python API
+(signature, docstring and exposed members). Guides and examples are actual
+Forge checkout files. Read only unresolved
 symbols. For discovery, use `references/index.json` or
 `references/cheatsheet.yml` only if you cannot identify a relevant symbol.
 The full `references/api.md` is not a prerequisite; reserve it for broad
