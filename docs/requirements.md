@@ -13,6 +13,8 @@
 
 - Knowledge queries use only a locally configured Forge checkout and installed release-matched scpf; no per-query network or Git subprocess validation is performed. Exact tag/clean-checkout validation belongs to the explicit doctor gate.
 - Expose task-oriented SKILL.md entrypoints via skill discovery and skill_reference. Provide explicit references to release-matched API signatures, docstrings, guides, cheatsheet and example source, with explicit errors for unsupported paths or mismatched releases.
+- Modeling knowledge must load progressively: common source/API contract first, exact API references for unresolved details, and optional domain skills/guides only when the requested design needs them. Complete examples teach the source contract rather than the independent authoring acceptance design.
+- Forge owns geometry authoring; SolidCraft control knowledge focuses on execution, inspection, parameter testing, view/render and verification. The full native command set is not normal authoring context.
 - Local stdio installation must remain possible without a new MCP Docker image.
 - A conversion skill must teach analysis of existing .sc designs and optional JSON exports, preserving original files and distinguishing observed model data from inferred modeling intent. Actual runtime conversion acceptance belongs to #5.
 

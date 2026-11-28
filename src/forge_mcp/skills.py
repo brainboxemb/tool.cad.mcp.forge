@@ -6,9 +6,11 @@ import re
 from . import knowledge
 
 _SKILLS = {
-    "forge-modeling": "Build a new maintainable Python Forge model from scpf/model.py using the installed release.",
+    "forge-modeling": "Author maintained Forge Python models; start here for ordinary geometry and load only relevant references.",
+    "forge-sheet-metal": "Optional: only for sheet manufacturing rules, folds, flanges, hems or flat patterns; not metal material alone.",
+    "forge-plastics": "Optional: only for specialized lips, snap-fits, screw bosses or rests; not plastic material or 3D printing alone.",
     "solidcraft-to-forge": "Understand an existing native SolidCraft design and translate it into verified Forge Python.",
-    "solidcraft-control": "Operate and inspect the running SolidCraft GUI through the authenticated control channel.",
+    "solidcraft-control": "Execute and verify Forge designs in the running SolidCraft GUI; parameter tests, camera and render.",
 }
 
 _REFS = {

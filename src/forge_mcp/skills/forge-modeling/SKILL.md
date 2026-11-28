@@ -1,125 +1,144 @@
 ---
 name: forge-modeling
-description: Use when building a new maintainable Python Forge CAD model from an empty or newly scaffolded scpf/model.py.
+description: Author or modify maintained Forge Python models; load specialized knowledge only when the design requires it.
 ---
 
 # Forge modeling
 
-Use this skill when creating a new Forge model. The maintained design is Python source in `scpf/model.py`; generated SolidCraft command JSON is build output, not source.
+Forge is the modeling API. SolidCraft executes and verifies the model. Author
+geometry and design relationships in Python, normally `scpf/model.py`; do not
+author SolidCraft command JSON or direct geometry commands. The compiler owns
+the mapping to SolidCraft.
 
-## Before the first write
+## Start
 
-1. Call `workspace_status` and stay inside the configured workbench/owner.
-2. Read this skill before authoring.
-3. Read `references/cheatsheet.yml` and `references/api.md`. Use `references/api/<Symbol or Symbol.method>.json` for exact current signatures.
-4. Use `references/index.json` only when you need a guide or a nearby qualified example. Read the selected example through `skill_reference`; do not inspect the Forge checkout directly.
-5. Write down the model parameters, origin/placement intent and expected result before adding geometry.
+- Understand the requested dimensions, datum, shape, editable relationships and
+  physical parts. Select a construction from the requirements, not a worked
+  example. Ask only about missing requirements that materially affect the design.
+- Confirm the configured writable target with `workspace_status` if not
+  already known. If source existence is unknown, list the owner root rather
+  than assuming `scpf/` exists. Read existing source before changing it.
+- Use the lowest sufficient knowledge level below. Do not fetch references
+  merely because they are available.
 
 ## Starting a new `scpf/model.py`
 
-A new root model has four parts:
-
-1. import the public Forge/SCPF names it uses;
-2. define one public model class;
-3. put editable numeric dimensions on the class as lower-case fields;
-4. return the root Shape/assembly from `build()`, then instantiate the root model once.
-
-Smallest useful model:
+Import public SCPF names, define a model class, declare its dimensions and
+return the final Shape or assembly from `build()`. One public class with
+`build()` can be discovered automatically; with several public model classes,
+select the root explicitly. An explicit final constructor is a useful convention.
 
 ```python
-from scpf import Anchor, Box
+from scpf import Anchor, Cylinder
 
 
-class Plate:
-    length = 60.0
-    width = 20.0
-    thickness = 4.0
-
-    def build(self):
-        return Box(
-            self.length,
-            self.width,
-            self.thickness,
-            anchor=Anchor.BOTTOM,
-        )
-
-
-Plate()
-```
-
-No `main()`, `show()` or handwritten SolidCraft command JSON is required.
-
-Forge's runner also makes the public SCPF modeling symbols available while executing a model, so older qualified examples may omit the explicit `from scpf import ...` line. For new standalone source, explicit imports are preferred because the maintained Python file is self-describing.
-
-### Parameter rules
-
-- lower-case numeric class fields such as `length = 60.0` become editable native model parameters;
-- lower-case fields beginning with `_` are Forge/build-time inputs and are not published as native model parameters;
-- `UPPER_CASE` numeric fields are fixed class constants;
-- `@dataclass` is optional; a plain class is sufficient for the normal root model.
-
-Keep symbolic relationships symbolic. Do not turn a parameter into a concrete Python number just to make a feature work.
-
-### Common Forge idioms
-
-The root-model example above teaches the file contract, not a recipe for the user's geometry. For actual modeling choices, use the version-matched Forge references and choose the API that best expresses the design intent.
-
-A few common idioms are worth recognizing:
-
-- `Anchor` selects which datum of a primitive or attachment is placed at the requested position.
-- `Faces` identifies cardinal target faces such as `Faces.TOP` for face-relative features.
-- A native `Hole` is a feature operation. Add that operation to the design history with `+`; the feature itself removes material.
-
-```python
-from scpf import Anchor, Box, Depth, Faces, Hole
-
-
-class Plate:
-    length = 60.0
-    width = 20.0
-    thickness = 4.0
-    hole_d = 8.0
+class SpacerBlank:
+    diameter = 26.0
+    height = 13.0
 
     def build(self):
-        plate = Box(
-            self.length,
-            self.width,
-            self.thickness,
-            anchor=Anchor.BOTTOM,
-        )
-        hole = Hole(
-            d=self.hole_d,
-            depth=Depth.THROUGH_ALL,
-        ).on(plate, face=Faces.TOP)
-        return plate + hole
+        return Cylinder(d=self.diameter, h=self.height, anchor=Anchor.BOTTOM)
 
 
-Plate()
+SpacerBlank()
 ```
 
-- Use an explicit `Sketch` when the design contains authored 2D profile intent. A sketch is created in a plane or on a face and then consumed by an operation such as `extrude()`.
-- Do not infer signatures, attachment rules, coordinate semantics or operator behavior from memory. Read `references/api/<Symbol or Symbol.method>.json` and a nearby qualified example with `skill_reference` before using unfamiliar API.
+This example teaches the file contract only. No `main()` or `show()` is
+required; a plain class is sufficient.
 
-These are API idioms, not mandatory construction steps. The agent remains responsible for designing the actual model from the user's requirements.
+- Lower-case numeric class fields represent editable model parameters.
+- Leading-underscore fields are build-time inputs; UPPER_CASE numeric fields
+  are fixed constants, not published parameters.
+- Use `self.<field>` and supported symbolic arithmetic for dependent
+  dimensions. Do not flatten editable inputs with `pv()` or `float()`.
+  General Python computation is not automatically parametric.
+
+## Level 1 — common authoring knowledge
+
+Use this entrypoint alone when it supplies the semantics and syntax needed.
+Lengths are in millimetres. Choose the datum instead of manually compensating
+for an anchor.
+
+| Intent | Forge vocabulary |
+| --- | --- |
+| Basic solid | `Box(length, width, height)` (X, Y, Z); `Cylinder(d=diameter, h=height, axis=Axis.Z)`; `Sphere(radius)`. All default to CENTER; use `anchor=Anchor.BOTTOM` for a Z-bottom datum where applicable. |
+| Geometric placement | `shape.at(x, y, z, anchor=Anchor.CENTER)` places a supported primitive datum. `shape.at(target)` aligns centers, not faces. |
+| Combine solid geometry | `a + b`, `a - b`, `a & b` join, cut, intersect supported operands. Support depends on the operand types. |
+| Face and datum selection | TOP/BOTTOM are +Z/-Z, LEFT/RIGHT are -X/+X, FRONT/BACK are -Y/+Y. `Faces` selects faces; `Anchor` selects placement datums. |
+| Hole feature | `Hole(d=diameter, depth=Depth.THROUGH_ALL)` expresses a through-hole. For a simple TOP-face hole, apply `body + hole.on(body, face=Faces.TOP)`; the feature itself removes material. Read the relevant reference for directional, blind or advanced hole-family placement. |
+| Explicit 2D intent | Use `with Sketch(plane="XY") as profile:` and author `Rectangle2D(width, depth)`, `Circle2D(d=diameter)` or another supported profile inside it. After leaving the context, `profile.extrude(distance)` creates 3D geometry. Negative distance reverses direction; `sym=True` extrudes symmetrically. A face-attached sketch uses `Sketch(on=body, parent=Anchor.TOP)`; consult its contract for region selection and cuts. |
+| Edge treatment | `body.fillet(radius, edges=Edges.VERTICAL)` or `body.chamfer(distance, edges=Edges.from_faces(Faces.TOP))` on supported bodies. Choose a selector matching the intended edges. |
+| Separate physical parts | A Shape is geometry, not an occurrence. Use component/assembly definitions, occurrence Placement and attachment for separate physical parts. Consult the assembly guides when needed. |
+
+These are independent API idioms, not a recipe or a mandatory sequence.
+
+## Level 2 — resolve a specific API question
+
+When a signature, supported operand, selector or placement rule is uncertain,
+call `skill_reference` with skill `forge-modeling` and the exact file:
+
+- `references/api/Box.json`, `references/api/Hole.json`,
+  `references/api/Sketch.json` for constructors;
+- `references/api/Shape.on.json`,
+  `references/api/Shape.rectangular_pattern.json`,
+  `references/api/Sketch.extrude.json` for methods.
+
+These API paths are virtual references, not files in the checkout. The MCP
+constructs the JSON response directly from the installed public Python API
+(signature, docstring and exposed members). Guides and examples are actual
+Forge checkout files. Read only unresolved
+symbols. For discovery, use `references/index.json` or
+`references/cheatsheet.yml` only if you cannot identify a relevant symbol.
+The full `references/api.md` is not a prerequisite; reserve it for broad
+API questions. Never guess unsupported API.
+
+## Level 3 — topic-specific knowledge
+
+If an unfamiliar construction needs more than a signature, select the relevant
+topic. These are optional routes, not a reading checklist.
+
+| Trigger in the design | Read only when relevant |
+| --- | --- |
+| Complex profiles, region selection, sketch patterns | `references/guide/geometry.html` |
+| Advanced holes, edge features, shells or feature patterns | `references/guide/features.html` |
+| Relative placement or attachment | `references/guide/transformations.html` |
+| Shared parameters, symbolic math or reusable definitions | `references/guide/model-objects.html` |
+| Separate parts, joints or assembly reuse | `references/guide/assembly-basics.html` or `references/guide/components.html` |
+| Folded sheet, flange, hem, flat pattern or sheet manufacturing rule | Skill `forge-sheet-metal` |
+| Specialized enclosure lip, snap-fit, screw boss or support rest | Skill `forge-plastics` |
+| Engineering drawing requested | `references/guide/drawings.html` |
+
+A metal material alone does not require sheet-metal modeling; plastic material
+or 3D printing alone does not require plastic-specific features. If the task
+does not require a topic, skip it. The optional skills are not prerequisites
+for ordinary modeling.
+
+If a selected guide or skill is insufficient, read the exact API reference
+or use `references/index.json` to find one relevant qualified example
+(`references/examples/<model-id>.py`). Use examples to establish supported
+idioms, not to choose the user's geometry. Stop loading knowledge as soon as
+the current design question is resolved. All Forge knowledge must come through
+`skill_reference`, not shell, checkout browsing, GitHub or web search.
 
 ## Build and verify
 
-1. Write `scpf/model.py` with `workspace_write`.
-2. For interactive work, read the `solidcraft-control` skill and use `forge_live` to compile/apply the maintained source to the running SolidCraft GUI.
-3. Inspect the active design with `solidcraft_live_inspect`.
-4. Verify dimensions/parameters/structure, then use a semantic SolidCraft parameter edit when the acceptance requires mutation.
-5. Inspect again, set a useful view and retrieve image evidence with `solidcraft_live_render`.
-6. Use `forge_compile` plus headless SolidCraft replay/evaluate/snapshot when independent saved evidence is required.
-7. Correct design intent in the Python source rather than leaving accidental GUI-only geometry edits as the maintained result.
+- Create source with `workspace_write`; it creates missing parent directories.
+  When replacing source, use the SHA-256 from `workspace_read` as
+  `expected_sha256`.
+- For live work, read `solidcraft-control` when needed and use `forge_live`
+  to compile/apply. For saved evidence use `forge_compile` and headless
+  replay/evaluate/snapshot. Do not compile separately before a normal live apply.
+- Check dimensions, placements, parameters and structure against the request;
+  retrieve useful visual evidence. Test parameter mutation when requested or
+  when needed to verify associativity.
+- Change design intent in Forge source. Use SolidCraft for execution,
+  inspection, parameter testing, view and rendering only. Report missing
+  knowledge or execution failures instead of switching CAD routes.
 
-Use both numeric/structural and visual evidence before claiming success. A successful tool reply or image alone is not enough.
+## Owner boundaries
 
-## Reuse and assemblies
-
-Keep component definitions separate from occurrences. Use Forge's documented placement, support and attachment semantics; do not invent API methods.
-
-The configured model root is authoritative and the only writable owner. Never search the surrounding CAD library for a different target model or switch model roots implicitly. If the configured owner is wrong or missing, stop and report the configuration problem.
-
-Assemblies and subassemblies may depend on other owners in the same configured CAD library. Use `catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)` only for an exact dependency owner/path already named by the target source, metadata, imports or the user. Dependency access is read-only and must never replace target selection.
-
-If converting an existing native SolidCraft design instead of starting a new Forge model, use the `solidcraft-to-forge` skill.
+The configured owner is the only writable target. Never discover or switch
+owners implicitly. Read explicitly referenced catalog dependencies only through
+`catalog_dependency_list(owner)` and `catalog_dependency_read(owner, path)`.
+For an existing SolidCraft design supplied for conversion use
+`solidcraft-to-forge` instead.

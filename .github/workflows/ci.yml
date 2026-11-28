@@ -76,6 +76,19 @@ jobs:
           python -m pip install '.[test]' ./forge-release/cadlib
           python -m pytest -q tests
 
+      - name: Export Forge knowledge for review
+        env:
+          FORGE_SOURCE_ROOT: ${{ github.workspace }}/forge-release
+          FORGE_REFERENCE_REVIEW_DIR: ${{ runner.temp }}/forge-reference-review
+        run: python -m pytest -q -s tests/test_reference_review.py
+
+      - name: Upload Forge reference review
+        uses: actions/upload-artifact@v4
+        with:
+          name: forge-reference-review
+          path: ${{ runner.temp }}/forge-reference-review
+          if-no-files-found: error
+
       - name: Test released SolidCraft stack
         if: steps.scope.outputs.runtime == 'true'
         env:
