@@ -10,8 +10,8 @@ owner for CAD behavior.
 
 ## Current accepted baseline
 
-The qualified local Forge MCP baseline is released as `v0.0.8` from stable
-`main` commit `da720b8001b3e563cd8c1b56de459425979a0404`.
+The qualified local Forge MCP baseline is released as `v0.0.9` from stable
+`main` commit `bcf986cb8dceff1db3d3f4f53712a70e096a8a78`.
 
 The accepted stack is:
 
@@ -70,17 +70,16 @@ only to create the exact `main` CI record required by release.
 
 ### WS1 — complete real Windows MCP acceptance
 
-MCP v0.0.8 is published and consumed by the template/concrete workspace.
-Real Windows Codex acceptance has now proven MCP discovery, fast status,
-release-matched knowledge access and the generated workbench skill router.
-`forge-modeling` now teaches the minimal `scpf/model.py` contract plus generic
-Forge idioms without prescribing model-specific geometry, and its native
-`Hole` example follows the qualified additive feature-history semantics. The
-current gate is issue #109: the 60 × 20 × 4 mm / Ø8 acceptance proved
-that direct SCPF compile (~0.395 s) and direct `compiler.compile_model()`
-(~0.650 s) are healthy, while the same compile times out only through the real
-MCP stdio tool-call. Fix that stdio child-process boundary, then resume the
-live SolidCraft apply/inspect/mutate/view/render demo.
+MCP v0.0.9 is published and consumed by the template/concrete workspace.
+On 2026-11-28 the operator confirmed standalone Windows compile/live apply,
+inspection, parameter mutation, view/render and evidence. Issue #109 is closed.
+This establishes execution, not independent authoring: the previous skill
+contained essentially the acceptance geometry.
+
+Issue #113 is the current authoring gate. Introduce progressive knowledge
+loading, optional sheet-metal/plastic skills and a focused SolidCraft control
+skill. Verify an independent authoring task and record the actual references
+used before proceeding to catalog acceptance.
 
 ### WS2 — Forge compatibility evolution
 
@@ -93,13 +92,15 @@ edits.
 
 | Issue | Lane/owner | Status | Next action |
 | --- | --- | --- | --- |
-| #109 | MCP | active WS1 gate | Isolate the Forge compiler child from MCP stdio and restore real Windows `forge_compile`/`forge_live` |
+| #113 | MCP | active WS1 gate | Progressive Forge skill routing and independent authoring acceptance |
 | #95 | MCP/Forge docs | after acceptance | Align SolidCraft command knowledge with the qualified 0.50.0 runtime without silently relabeling 0.49 docs |
 | #53 | MCP | later | Define a versioned Forge compatibility catalog and repeatable Forge upgrade procedure |
 | #39 | MCP | probably obsolete | Re-evaluate the old Forge-0.19 operational-skills PR against the current v0.25 skill surface before any reuse |
 | #42 | external workspace owner | move out | Track workspace-template work in its owning repository rather than this MCP repository |
 
 ## Recently completed
+
+- #109 fixed compiler child stdin isolation in MCP v0.0.9; real Windows live workflow confirmed by the operator.
 
 - #106 reconciled the stable plan with the published and workspace-adopted MCP `v0.0.8` baseline.
 - #103 published and verified MCP `v0.0.8` from exact stable main commit `da720b8001b3e563cd8c1b56de459425979a0404`.
@@ -125,10 +126,6 @@ edits.
 
 ## Next checkpoint
 
-Complete #109 and then resume the already-started Windows 60 × 20 × 4 mm / Ø8
-live SolidCraft demo against the next workspace-pinned MCP release. Treat #95 as a separate documentation
-alignment task unless the live engine exposes an actual 0.50 command mismatch.
+Complete #113 and repeat independent authoring against the next workspace-pinned MCP release. Then create and verify one maintained catalog model. Keep #95 separate: the 0.49 command reference must not be relabeled as 0.50.
 
-After that checkpoint, continue broad MCP product work from the current issue
-order without reintroducing a permanent promotion lane or always-expensive PR
-runtime acceptance.
+Continue product work from the current issue order after the workspace checkpoint.
