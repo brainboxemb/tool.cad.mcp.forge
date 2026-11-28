@@ -2,7 +2,13 @@
 
 Vendor-neutral local MCP server for AI-assisted Python Forge CAD authoring with SolidCraft inspection, rendering and verification.
 
-The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.25.0 and SolidCraft 0.49.0. The server is AI-client independent; stdio is the normal local transport.
+The qualified local path uses FastMCP 2.14.7, Forge/SCPF 0.25.0 and SolidCraft 0.50.0. The server is AI-client independent; stdio is the normal local transport.
+
+## Documentation
+
+- [Developer manual](docs/developer-manual.md): local VS Code development, scripts, tests and release.
+- [Managed workspace user manual](https://github.com/brainboxemb/template.cad.mcp.workspace/blob/main/docs/manual.md): normal installation and CAD usage.
+- [Documentation map](docs/README.md).
 
 ## Local setup
 
@@ -17,7 +23,7 @@ python -m pip install ./forge-release/cadlib
 python -m pip install .
 ```
 
-SolidCraft 0.49.0 must be installed locally. It may be on PATH or supplied explicitly with `--solidcraft-cli`.
+SolidCraft 0.50.0 must be installed locally. It may be on PATH or supplied explicitly with `--solidcraft-cli`.
 
 Check the complete environment without executing CAD:
 
@@ -29,7 +35,7 @@ forge-cad-mcp doctor \
   --solidcraft-cli /absolute/path/to/solidcraft-cli
 ```
 
-The command returns JSON and exits successfully only when the workspace, exact Forge release and SolidCraft 0.49.0 are ready.
+The command returns JSON and exits successfully only when the workspace, exact Forge release and SolidCraft 0.50.0 are ready.
 
 ## MCP client configuration
 
@@ -64,6 +70,7 @@ Command-line values take precedence for the current server process.
 Call `skill_list`, then read the relevant `SKILL.md` using `skill_reference`.
 
 - `forge-modeling` — create or edit maintainable Python Forge models.
+- `solidcraft-control` — live execution, inspection and rendering.
 - `solidcraft-to-forge` — understand an existing native SolidCraft design and translate it into verified Forge Python.
 
 References are matched to Forge 0.25.0. After local setup, model iteration does not require GitHub calls.
@@ -96,7 +103,7 @@ existing .sc -> model_input_summary / solidcraft_analyze
              -> analyze + render original and candidate
 ```
 
-Native `.sc` is an engine-owned artifact and is not exposed as raw text. Optional JSON is classified before use. The MCP does not expose arbitrary shell execution or a generic caller-supplied SolidCraft command runner.
+Native `.sc` is an engine-owned artifact and is not exposed as raw text. Optional JSON is classified before use. The MCP does not expose arbitrary shell execution. Trusted local stdio provides bounded live engine control through solidcraft_live_execute; Forge remains the geometry authoring route.
 
 ## Transport boundary
 
@@ -117,7 +124,7 @@ python -m pip install -e '.[test]' ./forge-release/cadlib
 FORGE_SOURCE_ROOT="$PWD/forge-release" python -m pytest -q tests
 ```
 
-CI reuses `ghcr.io/brainboxemb/cad-solidcraft:v0.3.6` for real SolidCraft 0.49.0 acceptance rather than publishing another runtime image.
+CI reuses `ghcr.io/brainboxemb/cad-solidcraft:v0.3.8` for real SolidCraft 0.50.0 acceptance rather than publishing another runtime image.
 
 Releases are published from qualified stable `main` through the governed
 procedure in [docs/release.md](docs/release.md); normal release tags are not
